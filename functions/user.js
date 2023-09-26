@@ -18,7 +18,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-const createUser = async (event) => {
+const create = async (event) => {
   try {
     const body = JSON.parse(event.body);
     const { email, password } = body;
@@ -56,7 +56,7 @@ const createUser = async (event) => {
 
 exports.handler = async (event) => {
   if (event.httpMethod === "POST") {
-    const response = await createUser(event);
+    const response = await create(event);
     return response;
   }
 
