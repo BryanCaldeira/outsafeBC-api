@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/ekafyi/hello-serverless-netlify-functions#readme",
   "devDependencies": {
-    "@11ty/eleventy": "^0.11.0"
+    "@11ty/eleventy": "^0.11.0",
+    "@faker-js/faker": "^8.1.0"
   },
   "dependencies": {
     "@firebase/auth": "^1.3.0",
