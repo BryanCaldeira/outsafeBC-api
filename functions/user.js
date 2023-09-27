@@ -6,6 +6,7 @@ const {
   GoogleAuthProvider,
 } = require("firebase/auth");
 const { cappitalize } = require("../utils/cappitalize");
+const { getUser } = require("../sql/users");
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -62,7 +63,7 @@ const create = async (event) => {
 const handleGoogleProvider = async (event) => {
   try {
     const body = JSON.parse(event.body);
-    const { credential :idToken} = body;
+    const { credential: idToken } = body;
 
     // Build Firebase credential with the Google ID token.
     const credential = GoogleAuthProvider.credential(idToken);
@@ -93,8 +94,33 @@ const handleGoogleProvider = async (event) => {
   }
 };
 
+const get = async (event) => {
+  try {
+    const { id } = event.queryStringParameters;
+
+    const result = await getUser(id);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: result.rows.length ? result.rows[0] : null,
+        message: result.rows.length ? "" : "No results found",
+      }),
+    };
+  } catch (error) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: error.message,
+        data: null,
+      }),
+    };
+  }
+};
+
 exports.handler = async (event) => {
-  const { provider } = event.queryStringParameters;
+  const { provider, id } = event.queryStringParameters;
 
   if (event.httpMethod === "POST" && provider === "email") {
     const response = await create(event);
@@ -103,6 +129,11 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === "POST" && provider === "google") {
     const response = await handleGoogleProvider(event);
+    return response;
+  }
+
+  if (event.httpMethod === "GET" && !!id) {
+    const response = await get(event);
     return response;
   }
 
