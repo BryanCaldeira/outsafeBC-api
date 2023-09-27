@@ -6,7 +6,7 @@ const {
   GoogleAuthProvider,
 } = require("firebase/auth");
 const { cappitalize } = require("../utils/cappitalize");
-const { getUser } = require("../sql/users");
+const { getUser, createUser } = require("../sql/users");
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -35,11 +35,42 @@ const create = async (event) => {
       password
     );
 
-    const user = userCredential.user;
+    const firebaseUser = userCredential?.user;
+
+    const name = !!firebaseUser?.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[0]
+      : "";
+    const lastname = !!firebaseUser.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[1]
+      : "";
+
+    const response = await createUser(
+      firebaseUser?.uid,
+      name,
+      lastname,
+      firebaseUser?.email,
+      "password",
+      firebaseUser?.photoURL ?? ""
+    );
+
+    const user = response?.rows?.[0];
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ error: null, data: user }),
+      body: JSON.stringify({
+        error: null,
+        data: {
+          id: user?.id,
+          createdAt: user?.created_at,
+          name,
+          lastname,
+          email: firebaseUser?.email,
+          photo: firebaseUser?.photoURL,
+          stsTokenManager: firebaseUser?.stsTokenManager,
+          accessToken: firebaseUser?.accessToken,
+          metadata: firebaseUser?.metadata,
+        },
+      }),
     };
   } catch (error) {
     const errorCode = error.code;
@@ -69,11 +100,44 @@ const handleGoogleProvider = async (event) => {
     const credential = GoogleAuthProvider.credential(idToken);
 
     // Sign in with credential from the Google user.
-    const response = await signInWithCredential(auth, credential);
+    const userCredential = await signInWithCredential(auth, credential);
+
+    const firebaseUser = userCredential?.user;
+
+    const name = !!firebaseUser?.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[0]
+      : "";
+    const lastname = !!firebaseUser.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[1]
+      : "";
+
+    const response = await createUser(
+      firebaseUser?.uid,
+      name,
+      lastname,
+      firebaseUser?.email,
+      "google",
+      firebaseUser?.photoURL ?? ""
+    );
+
+    const user = response?.rows?.[0];
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ error: null, data: response }),
+      body: JSON.stringify({
+        error: null,
+        data: {
+          id: user?.id,
+          createdAt: user?.created_at,
+          name,
+          lastname,
+          email: firebaseUser?.email,
+          photo: firebaseUser?.photoURL,
+          stsTokenManager: firebaseUser?.stsTokenManager,
+          accessToken: firebaseUser?.accessToken,
+          metadata: firebaseUser?.metadata,
+        },
+      }),
     };
   } catch (error) {
     const errorCode = error.code;
@@ -122,7 +186,7 @@ const get = async (event) => {
 exports.handler = async (event) => {
   const { provider, id } = event.queryStringParameters;
 
-  if (event.httpMethod === "POST" && provider === "email") {
+  if (event.httpMethod === "POST" && provider === "password") {
     const response = await create(event);
     return response;
   }
