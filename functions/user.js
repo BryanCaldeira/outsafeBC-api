@@ -1,5 +1,10 @@
 const { initializeApp } = require("firebase/app");
-const { getAuth, createUserWithEmailAndPassword } = require("firebase/auth");
+const {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithCredential,
+  GoogleAuthProvider,
+} = require("firebase/auth");
 const { cappitalize } = require("../utils/cappitalize");
 
 // Your web app's Firebase configuration
@@ -54,9 +59,50 @@ const create = async (event) => {
   }
 };
 
+const handleGoogleProvider = async (event) => {
+  try {
+    const body = JSON.parse(event.body);
+    const { credential :idToken} = body;
+
+    // Build Firebase credential with the Google ID token.
+    const credential = GoogleAuthProvider.credential(idToken);
+
+    // Sign in with credential from the Google user.
+    const response = await signInWithCredential(auth, credential);
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ error: null, data: response }),
+    };
+  } catch (error) {
+    const errorCode = error.code;
+    let errorMessage = error.message;
+
+    if (typeof errorCode === "string" && errorCode.includes("auth/")) {
+      const message = errorCode.replace("auth/", "").split("-").join(" ");
+      errorMessage = cappitalize(message);
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: errorMessage,
+        data: null,
+      }),
+    };
+  }
+};
+
 exports.handler = async (event) => {
-  if (event.httpMethod === "POST") {
+  const { provider } = event.queryStringParameters;
+
+  if (event.httpMethod === "POST" && provider === "email") {
     const response = await create(event);
+    return response;
+  }
+
+  if (event.httpMethod === "POST" && provider === "google") {
+    const response = await handleGoogleProvider(event);
     return response;
   }
 
