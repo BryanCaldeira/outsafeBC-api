@@ -33,7 +33,30 @@ async function createUser(
   return response;
 }
 
+async function updateUser(id, name, lastname, photo) {
+  const fields = [
+    { key: "name", value: name },
+    { key: "lastname", value: lastname },
+    { key: "photo", value: photo },
+  ]
+    .filter(({ value }) => !!value)
+    .map(({ value, key }) => `${key} = '${value}'`)
+    .join(",");
+
+  const response = await SQLClient.query(
+    `update users
+     set updated_at = NOW(),
+    ${fields}
+     where id = '${id}'
+     returning id , name, lastname, email, photo, updated_at
+    `
+  );
+
+  return response;
+}
+
 module.exports = {
   getUser,
   createUser,
+  updateUser,
 };
