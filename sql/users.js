@@ -8,6 +8,14 @@ async function getUser(id) {
   return response;
 }
 
+async function getUserWithFirebase(id) {
+  const response = await SQLClient.query(
+    `select * from users where firebase_user_id = '${id}' `
+  );
+
+  return response;
+}
+
 async function createUser(
   firebase_user_id,
   name,
@@ -59,4 +67,5 @@ module.exports = {
   getUser,
   createUser,
   updateUser,
+  getUserWithFirebase,
 };
