@@ -1,5 +1,10 @@
 const { initializeApp } = require("firebase/app");
-const { getAuth, signInWithEmailAndPassword } = require("firebase/auth");
+const {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithCredential,
+  GoogleAuthProvider,
+} = require("firebase/auth");
 const { getUserWithFirebase } = require("../sql/users");
 
 // Your web app's Firebase configuration
@@ -16,12 +21,12 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
-exports.handler = async (event) => {
-  const { email, password } = JSON.parse(event.body);
+const handleEmailAndPassword = async (event) => {
+  try {
+    const { email, password } = JSON.parse(event.body);
+    const auth = getAuth(app);
 
-  if (event.httpMethod === "POST") {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
@@ -55,9 +60,103 @@ exports.handler = async (event) => {
           stsTokenManager: firebaseUser?.stsTokenManager,
           accessToken: firebaseUser?.accessToken,
           metadata: firebaseUser?.metadata,
+          auth,
         },
       }),
     };
+  } catch (error) {
+    const errorCode = error.code;
+    let errorMessage = error.message;
+
+    if (typeof errorCode === "string" && errorCode.includes("auth/")) {
+      const message = errorCode.replace("auth/", "").split("-").join(" ");
+      errorMessage = cappitalize(message);
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: errorMessage,
+        data: null,
+      }),
+    };
+  }
+};
+
+const handleGoogleProvider = async (event) => {
+  try {
+    const body = JSON.parse(event.body);
+    const { credential: idToken } = body;
+    const auth = getAuth(app);
+
+    // Build Firebase credential with the Google ID token.
+    const credential = GoogleAuthProvider.credential(idToken);
+
+    // Sign in with credential from the Google user.
+    const userCredential = await signInWithCredential(auth, credential);
+
+    const firebaseUser = userCredential?.user;
+
+    const name = !!firebaseUser?.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[0]
+      : "";
+    const lastname = !!firebaseUser.displayName
+      ? firebaseUser?.displayName?.split(" ")?.[1]
+      : "";
+
+    const response = await getUserWithFirebase(firebaseUser?.uid);
+
+    const user = response?.rows?.[0];
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: {
+          id: user?.id,
+          createdAt: user?.created_at,
+          name,
+          lastname,
+          email: firebaseUser?.email,
+          photo: firebaseUser?.photoURL,
+          stsTokenManager: firebaseUser?.stsTokenManager,
+          accessToken: firebaseUser?.accessToken,
+          metadata: firebaseUser?.metadata,
+          auth,
+        },
+      }),
+    };
+  } catch (error) {
+    const errorCode = error.code;
+    let errorMessage = error.message;
+
+    if (typeof errorCode === "string" && errorCode.includes("auth/")) {
+      const message = errorCode.replace("auth/", "").split("-").join(" ");
+      errorMessage = cappitalize(message);
+    }
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        error: errorMessage,
+        data: null,
+      }),
+    };
+  }
+};
+
+exports.handler = async (event) => {
+  const { provider } = event.queryStringParameters;
+  const { email, password } = JSON.parse(event.body);
+
+  if (event.httpMethod === "POST" && !!email && !!password) {
+    const response = await handleEmailAndPassword(event);
+    return response;
+  }
+
+  if (event.httpMethod === "POST" && provider === "google") {
+    const response = await handleGoogleProvider(event);
+    return response;
   }
 
   return {
