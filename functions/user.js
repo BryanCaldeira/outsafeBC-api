@@ -22,10 +22,11 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 const handleGoogleProvider = async (event) => {
   try {
+    const auth = getAuth(app);
+
     const body = JSON.parse(event.body);
     const { credential: idToken } = body;
 
@@ -69,6 +70,7 @@ const handleGoogleProvider = async (event) => {
           stsTokenManager: firebaseUser?.stsTokenManager,
           accessToken: firebaseUser?.accessToken,
           metadata: firebaseUser?.metadata,
+          auth,
         },
       }),
     };
@@ -118,6 +120,8 @@ const get = async (event) => {
 
 const create = async (event) => {
   try {
+    const auth = getAuth(app);
+
     const body = JSON.parse(event.body);
     const { email, password } = body;
 
@@ -161,6 +165,7 @@ const create = async (event) => {
           stsTokenManager: firebaseUser?.stsTokenManager,
           accessToken: firebaseUser?.accessToken,
           metadata: firebaseUser?.metadata,
+          auth,
         },
       }),
     };
