@@ -37,7 +37,7 @@ exports.handler = async (event) => {
       ? firebaseUser?.displayName?.split(" ")?.[1]
       : "";
 
-    const response = await getUserWithFirebase();
+    const response = await getUserWithFirebase(firebaseUser.uid);
 
     const user = response?.rows?.[0];
 
@@ -62,6 +62,10 @@ exports.handler = async (event) => {
 
   return {
     statusCode: 200,
-    body: `${event.httpMethod} not configured`,
+    body: JSON.stringify({
+      error: `${event.httpMethod} is not configured yet`,
+      data: null,
+      message: null,
+    }),
   };
 };
