@@ -1,4 +1,5 @@
 const { faker } = require("@faker-js/faker");
+const headers = require("../utils/headers");
 
 class HazardReport {
   constructor() {
@@ -17,26 +18,26 @@ class HazardReport {
       wildfire: [],
       infrastructure: ["Bridge", "Road"],
     };
-     this.id = faker.string.uuid()
-     this.location= {
-        lat: coordinates[0],
-        lng: coordinates[1],
-        address: faker.location.ordinalDirection(),
-        fullAddress: faker.location.ordinalDirection(),
-      }
-     this.hazardCategory= {
-        id: faker.string.uuid(),
-        name: hazardType,
-        hasOptions: true,
-      }
-     this.hazard ={
-        id: faker.string.uuid(),
-        name: !!hazard[hazardType].length
-          ? faker.helpers.arrayElement(hazard[hazardType])
-          : hazardType,
-      }
-      this.comment= "No comments"
-      this.images= [faker.image.url, faker.image.url, faker.image.url]
+    this.id = faker.string.uuid();
+    this.location = {
+      lat: coordinates[0],
+      lng: coordinates[1],
+      address: faker.location.ordinalDirection(),
+      fullAddress: faker.location.ordinalDirection(),
+    };
+    this.hazardCategory = {
+      id: faker.string.uuid(),
+      name: hazardType,
+      hasOptions: true,
+    };
+    this.hazard = {
+      id: faker.string.uuid(),
+      name: !!hazard[hazardType].length
+        ? faker.helpers.arrayElement(hazard[hazardType])
+        : hazardType,
+    };
+    this.comment = "No comments";
+    this.images = [faker.image.url, faker.image.url, faker.image.url];
   }
 }
 
@@ -44,6 +45,7 @@ const create = async (_event) => {
   const report = new HazardReport();
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
@@ -58,10 +60,11 @@ const update = async (event) => {
   const { id } = event.queryStringParameters;
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: {...report, id},
+      data: { ...report, id },
       message: "Hazard report updated successfully",
     }),
   };
@@ -72,10 +75,11 @@ const remove = async (event) => {
   const { id } = event.queryStringParameters;
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: {...report, id},
+      data: { ...report, id },
       message: "Hazard report deleted successfully",
     }),
   };
@@ -87,6 +91,7 @@ const get = async (_event) => {
   const report3 = new HazardReport();
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
@@ -101,6 +106,7 @@ const getById = async (event) => {
   const report = new HazardReport();
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
@@ -113,7 +119,6 @@ const getById = async (event) => {
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
 
-  console.log({ event });
   if (event.httpMethod === "POST") {
     const response = await create(event);
     return response;
@@ -145,10 +150,11 @@ exports.handler = async (event) => {
   }
 
   return {
+    ...headers,
     statusCode: 200,
-    body: {
+    body: JSON.stringify({
       error: "Invalid request",
       data: null,
-    },
+    }),
   };
 };
