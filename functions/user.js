@@ -5,6 +5,7 @@ const {
   signInWithCredential,
   GoogleAuthProvider,
 } = require("firebase/auth");
+const headers = require("../utils/headers");
 const { cappitalize } = require("../utils/cappitalize");
 const { getUser, createUser, updateUser } = require("../sql/users");
 
@@ -57,6 +58,7 @@ const handleGoogleProvider = async (event) => {
     const user = response?.rows?.[0];
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -84,6 +86,7 @@ const handleGoogleProvider = async (event) => {
     }
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: errorMessage,
@@ -100,6 +103,7 @@ const get = async (event) => {
     const result = await getUser(id);
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -109,6 +113,7 @@ const get = async (event) => {
     };
   } catch (error) {
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: error.message,
@@ -152,6 +157,7 @@ const create = async (event) => {
     const user = response?.rows?.[0];
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -179,6 +185,7 @@ const create = async (event) => {
     }
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: errorMessage,
@@ -196,6 +203,7 @@ const update = async (event) => {
 
     if (!name && !lastname && !photo) {
       return {
+        ...headers,
         statusCode: 200,
         body: JSON.stringify({
           error: null,
@@ -210,6 +218,7 @@ const update = async (event) => {
     const user = response?.rows?.[0];
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -234,6 +243,7 @@ const update = async (event) => {
     }
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: errorMessage,
@@ -267,6 +277,7 @@ exports.handler = async (event) => {
   }
 
   return {
+    ...headers,
     statusCode: 404,
     body: JSON.stringify({
       error: `${event.httpMethod} not configured`,
