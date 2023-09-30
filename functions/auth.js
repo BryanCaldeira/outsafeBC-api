@@ -6,6 +6,8 @@ const {
   GoogleAuthProvider,
 } = require("firebase/auth");
 const { getUserWithFirebase } = require("../sql/users");
+const headers = require("../utils/headers");
+const { cappitalize } = require("../utils/cappitalize");
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -47,6 +49,7 @@ const handleEmailAndPassword = async (event) => {
     const user = response?.rows?.[0];
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -74,6 +77,7 @@ const handleEmailAndPassword = async (event) => {
     }
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: errorMessage,
@@ -109,6 +113,7 @@ const handleGoogleProvider = async (event) => {
     const user = response?.rows?.[0];
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
@@ -136,6 +141,7 @@ const handleGoogleProvider = async (event) => {
     }
 
     return {
+      ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: errorMessage,
@@ -160,6 +166,7 @@ exports.handler = async (event) => {
   }
 
   return {
+    ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: `${event.httpMethod} is not configured yet`,
