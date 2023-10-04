@@ -58,7 +58,7 @@ exports.handler = async (event) => {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
-      error: "hazard category endpoint to be implemented",
+      error: `${event.httpMethod} hazard category endpoint to be implemented`,
       data: null,
       message: null,
     }),
