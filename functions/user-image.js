@@ -8,20 +8,19 @@ const {
 const headers = require("../utils/headers");
 const firebaseConfig = require("../utils/firebaseConfig");
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig.config);
 
 const storage = getStorage(app, firebaseConfig.firestoreURL);
 
 exports.handler = async (event) => {
-  const { fileName } = event.queryStringParameters;
+  const { userId } = event.queryStringParameters;
 
-  if (!fileName) {
+  if (!userId) {
     return {
       ...headers,
       statusCode: 200,
       body: JSON.stringify({
-        error: "fileName required",
+        error: "userId required",
         data: null,
         message: null,
       }),
@@ -30,7 +29,7 @@ exports.handler = async (event) => {
   const file = event.body;
 
   if (event.httpMethod === "POST") {
-    const storageRef = ref(storage, "hazard-report/" + fileName);
+    const storageRef = ref(storage, "user/" + userId);
 
     await uploadString(storageRef, file, "base64");
 
