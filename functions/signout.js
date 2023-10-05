@@ -1,12 +1,19 @@
-const { signOut } = require("firebase/auth");
+const { initializeApp } = require("firebase/app");
+const { signOut, getAuth } = require("firebase/auth");
 const headers = require("../utils/headers");
+const firebaseConfig = require("../utils/firebaseConfig");
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig.config);
 
 exports.handler = async (event) => {
   const auth = JSON.parse(event.body);
 
   if (event.httpMethod === "POST" && !!auth?.currentUser) {
     try {
-      await signOut(auth);
+      const auth2 = getAuth(app);
+
+      await signOut(auth2);
       return {
         ...headers,
         statusCode: 200,

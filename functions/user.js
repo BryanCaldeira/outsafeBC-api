@@ -4,25 +4,15 @@ const {
   createUserWithEmailAndPassword,
   signInWithCredential,
   GoogleAuthProvider,
+  deleteUser: deleteFirebaseUser,
 } = require("firebase/auth");
 const headers = require("../utils/headers");
 const { cappitalize } = require("../utils/cappitalize");
-const { getUser, createUser, updateUser } = require("../sql/users");
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyC1wk-w6KW-dFVFYabxaXRIx2yfNJOmKeI",
-  authDomain: "campbuddy-4944b.firebaseapp.com",
-  projectId: "campbuddy-4944b",
-  storageBucket: "campbuddy-4944b.appspot.com",
-  messagingSenderId: "914763218338",
-  appId: "1:914763218338:web:eee692db2abba6b000c6fb",
-  measurementId: "G-QPG084P9N6",
-};
+const { getUser, createUser, updateUser, deleteUser } = require("../sql/users");
+const firebaseConfig = require("../utils/firebaseConfig");
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig.config);
 
 const handleGoogleProvider = async (event) => {
   try {
@@ -253,6 +243,84 @@ const update = async (event) => {
   }
 };
 
+const remove = async (event) => {
+  try {
+    if (!event.body) {
+      return {
+        ...headers,
+        statusCode: 200,
+        body: JSON.stringify({
+          error: "Invalid request body",
+          data: null,
+          message: null,
+        }),
+      };
+    }
+
+    const auth = JSON.parse(event.body);
+
+    if (!auth?.currentUser) {
+      return {
+        ...headers,
+        statusCode: 200,
+        body: JSON.stringify({
+          error: "currentUser is required",
+          data: null,
+          message: null,
+        }),
+      };
+    }
+
+    const user = { ...auth.currentUser };
+
+    const auth2 = getAuth(app);
+
+    try {
+      await deleteFirebaseUser(auth2.currentUser);
+    } catch (error) {
+      return {
+        ...headers,
+        statusCode: 200,
+        body: JSON.stringify({
+          error: "Something went wrong. User was not deleted.",
+          data: null,
+        }),
+      };
+    }
+
+    const response = await deleteUser(user.uid);
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: {
+          ...response?.rows?.[0],
+        },
+        message: "User deleted successfully",
+      }),
+    };
+  } catch (error) {
+    const errorCode = error.code;
+    let errorMessage = error.message;
+
+    if (typeof errorCode === "string" && errorCode.includes("auth/")) {
+      const message = errorCode.replace("auth/", "").split("-").join(" ");
+      errorMessage = cappitalize(message);
+    }
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: errorMessage,
+        data: null,
+      }),
+    };
+  }
+};
+
 exports.handler = async (event) => {
   const { provider, id } = event.queryStringParameters;
 
@@ -273,6 +341,11 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === "GET" && !!id) {
     const response = await get(event);
+    return response;
+  }
+
+  if (event.httpMethod === "DELETE") {
+    const response = await remove(event);
     return response;
   }
 

@@ -63,9 +63,30 @@ async function updateUser(id, name, lastname, photo) {
   return response;
 }
 
+async function deleteUser(firebaseUserId) {
+  const result = await getUserWithFirebase(firebaseUserId);
+
+  const user = result.rows[0];
+
+  const response = await SQLClient.query(
+    `update users
+     set deleted_at = NOW(),
+     name = '',
+     lastname = '',
+     photo = '',
+     firebase_user_id = NULL
+     where id = '${user.id}'
+     returning id
+    `
+  );
+
+  return response;
+}
+
 module.exports = {
   getUser,
   createUser,
   updateUser,
+  deleteUser,
   getUserWithFirebase,
 };
