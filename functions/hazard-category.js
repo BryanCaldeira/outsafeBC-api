@@ -1,18 +1,18 @@
 const { faker } = require("@faker-js/faker");
 const headers = require("../utils/headers");
 
-const HAZAR_TYPE_LIST = ["wildlife", "weather", "wildfire", "infrastructure"];
+const HAZARD_CATEGORY_LIST = ["wildlife", "weather", "wildfire", "infrastructure"];
 
-class HazardType {
+class HazardCategory {
   constructor() {
-    const hazardType = faker.helpers.arrayElement(HAZAR_TYPE_LIST);
+    const hazardCategory = faker.helpers.arrayElement(HAZARD_CATEGORY_LIST);
 
     this.id = faker.string.uuid();
-    this.name = hazardType;
+    this.name = hazardCategory;
     this.description = faker.lorem.words(10);
     this.hasOptions = true;
     this.uiSettings = {
-      hazardOptionTitle: `What kind of ${hazardType}?`
+      hazardOptionTitle: `What kind of ${hazardCategory}?`
     };
   }
 }
@@ -23,7 +23,7 @@ const get = async (_event) => {
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: HAZAR_TYPE_LIST.map((category)=> ({id: faker.string.uuid(), name: category , description :faker.lorem.words(10)})),
+      data: HAZARD_CATEGORY_LIST.map((category)=> ({id: faker.string.uuid(), name: category , description :faker.lorem.words(10)})),
       message: null,
     }),
   };
@@ -32,7 +32,7 @@ const get = async (_event) => {
 const getById = async (event) => {
   const { id } = event.queryStringParameters;
 
-  const hazadType = new HazardType();
+  const hazadType = new HazardCategory();
   return {
     ...headers,
     statusCode: 200,
