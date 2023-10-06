@@ -29,17 +29,9 @@ const handleGoogleProvider = async (event) => {
 
     const firebaseUser = userCredential?.user;
 
-    const name = !!firebaseUser?.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[0]
-      : "";
-    const lastname = !!firebaseUser.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[1]
-      : "";
-
     const response = await createUser(
       firebaseUser?.uid,
-      name,
-      lastname,
+      firebaseUser?.displayName,
       firebaseUser?.email,
       "google",
       firebaseUser?.photoURL ?? ""
@@ -55,8 +47,7 @@ const handleGoogleProvider = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name,
-          lastname,
+          name: firebaseUser?.displayName,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,
@@ -128,17 +119,9 @@ const create = async (event) => {
 
     const firebaseUser = userCredential?.user;
 
-    const name = !!firebaseUser?.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[0]
-      : "";
-    const lastname = !!firebaseUser.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[1]
-      : "";
-
     const response = await createUser(
       firebaseUser?.uid,
-      name,
-      lastname,
+      firebaseUser?.displayName,
       firebaseUser?.email,
       "password",
       firebaseUser?.photoURL ?? ""
@@ -154,8 +137,7 @@ const create = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name,
-          lastname,
+          name: firebaseUser?.displayName,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,
@@ -188,10 +170,10 @@ const create = async (event) => {
 const update = async (event) => {
   try {
     const body = JSON.parse(event.body);
-    const { name, lastname, photo } = body;
+    const { name, photo } = body;
     const { id } = event.queryStringParameters;
 
-    if (!name && !lastname && !photo) {
+    if (!name  && !photo) {
       return {
         ...headers,
         statusCode: 200,
@@ -203,7 +185,7 @@ const update = async (event) => {
       };
     }
 
-    const response = await updateUser(id, name, lastname, photo);
+    const response = await updateUser(id, name, photo);
 
     const user = response?.rows?.[0];
 
@@ -216,7 +198,6 @@ const update = async (event) => {
           id: user?.id,
           createdAt: user?.created_at,
           name: user?.name,
-          lastname: user?.lastname,
           email: user?.email,
           photo: user?.photo,
         },

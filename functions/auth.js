@@ -37,13 +37,6 @@ const handleEmailAndPassword = async (event) => {
 
     const firebaseUser = userCredential?.user;
 
-    const name = !!firebaseUser?.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[0]
-      : "";
-    const lastname = !!firebaseUser.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[1]
-      : "";
-
     const response = await getUserWithFirebase(firebaseUser.uid);
 
     const user = response?.rows?.[0];
@@ -56,8 +49,7 @@ const handleEmailAndPassword = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name,
-          lastname,
+          name: firebaseUser?.displayName,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,
@@ -101,13 +93,6 @@ const handleGoogleProvider = async (event) => {
 
     const firebaseUser = userCredential?.user;
 
-    const name = !!firebaseUser?.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[0]
-      : "";
-    const lastname = !!firebaseUser.displayName
-      ? firebaseUser?.displayName?.split(" ")?.[1]
-      : "";
-
     const response = await getUserWithFirebase(firebaseUser?.uid);
 
     const user = response?.rows?.[0];
@@ -120,8 +105,7 @@ const handleGoogleProvider = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name,
-          lastname,
+          name: firebaseUser?.displayName,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,

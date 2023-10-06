@@ -19,17 +19,15 @@ async function getUserWithFirebase(id) {
 async function createUser(
   firebase_user_id,
   name,
-  lastname,
   email,
   provider,
   photo
 ) {
   const response = await SQLClient.query(
-    `insert into users (firebase_user_id, name, lastname, email,  provider, photo) 
+    `insert into users (firebase_user_id, name, email,  provider, photo) 
     values 
     ('${firebase_user_id}',
     '${name}',
-    '${lastname}',
     '${email}',
     '${provider}',    
     '${photo}'
@@ -41,10 +39,9 @@ async function createUser(
   return response;
 }
 
-async function updateUser(id, name, lastname, photo) {
+async function updateUser(id, name, photo) {
   const fields = [
     { key: "name", value: name },
-    { key: "lastname", value: lastname },
     { key: "photo", value: photo },
   ]
     .filter(({ value }) => !!value)
@@ -56,7 +53,7 @@ async function updateUser(id, name, lastname, photo) {
      set updated_at = NOW(),
     ${fields}
      where id = '${id}'
-     returning id , name, lastname, email, photo, updated_at
+     returning id , name, email, photo, updated_at
     `
   );
 
@@ -72,7 +69,6 @@ async function deleteUser(firebaseUserId) {
     `update users
      set deleted_at = NOW(),
      name = '',
-     lastname = '',
      photo = '',
      firebase_user_id = NULL
      where id = '${user.id}'
