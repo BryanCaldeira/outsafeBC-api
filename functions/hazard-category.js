@@ -9,8 +9,11 @@ class HazardType {
 
     this.id = faker.string.uuid();
     this.name = hazardType;
+    this.description = faker.lorem.words(10);
     this.hasOptions = true;
-    this.title = `What kind of ${hazardType}?`;
+    this.uiSettings = {
+      hazardOptionTitle: `What kind of ${hazardType}?`
+    };
   }
 }
 
@@ -20,7 +23,7 @@ const get = async (_event) => {
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: HAZAR_TYPE_LIST,
+      data: HAZAR_TYPE_LIST.map((category)=> ({id: faker.string.uuid(), name: category , description :faker.lorem.words(10)})),
       message: null,
     }),
   };
