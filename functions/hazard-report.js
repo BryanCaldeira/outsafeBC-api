@@ -84,17 +84,28 @@ const remove = async (event) => {
   };
 };
 
-const get = async (_event) => {
-  const report = new HazardReport();
-  const report2 = new HazardReport();
-  const report3 = new HazardReport();
+const get = async (event) => {
+  const { offset, limit } = event.queryStringParameters;
+
+  const reportList = [];
+
+  const limitSet = limit >= 100 ? 100 : limit;
+
+  for (let index = offset; index < limitSet; index++) {
+    reportList.push(new HazardReport());
+  }
 
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: [report, report2, report3],
+      data: {
+        results: reportList,
+        limit,
+        offset,
+        total: 100,
+      },
       message: "",
     }),
   };
