@@ -23,7 +23,6 @@ class HazardReport {
       lat: coordinates[0],
       lng: coordinates[1],
       address: faker.location.ordinalDirection(),
-      fullAddress: faker.location.ordinalDirection(),
     };
     this.hazardCategory = {
       id: faker.string.uuid(),
