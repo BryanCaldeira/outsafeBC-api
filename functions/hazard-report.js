@@ -85,13 +85,13 @@ const remove = async (event) => {
 };
 
 const get = async (event) => {
-  const { offset, limit } = event.queryStringParameters;
+  const { cursor, size } = event.queryStringParameters;
 
   const reportList = [];
 
-  const limitSet = limit >= 100 ? 100 : limit;
+  const limit = +size >= 100 ? 100 : +size;
 
-  for (let index = offset; index < limitSet; index++) {
+  for (let index = 0; index < limit; index++) {
     reportList.push(new HazardReport());
   }
 
@@ -102,8 +102,8 @@ const get = async (event) => {
       error: null,
       data: {
         results: reportList,
-        limit,
-        offset,
+        size: +size,
+        after: +cursor + +size,
         total: 100,
       },
       message: "",
