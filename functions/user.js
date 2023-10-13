@@ -173,7 +173,7 @@ const update = async (event) => {
     const { name, photo } = body;
     const { id } = event.queryStringParameters;
 
-    if (!name  && !photo) {
+    if (!name && !photo) {
       return {
         ...headers,
         statusCode: 200,
@@ -315,7 +315,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if (event.httpMethod === "PUT" && !!id) {
+  if ((event.httpMethod === "PUT" || event.httpMethod === "OPTIONS") && !!id) {
     const response = await update(event);
     return response;
   }
@@ -325,7 +325,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if (event.httpMethod === "DELETE") {
+  if (event.httpMethod === "DELETE" || event.httpMethod === "OPTIONS") {
     const response = await remove(event);
     return response;
   }
