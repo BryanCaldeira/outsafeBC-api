@@ -28,7 +28,7 @@ exports.handler = async (event) => {
   }
   const file = event.body;
 
-  if (event.httpMethod === "POST") {
+  if (event.httpMethod === "POST" || event.httpMethod === "OPTIONS") {
     const storageRef = ref(storage, "user/" + userId);
 
     await uploadString(storageRef, file, "base64");
