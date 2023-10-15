@@ -13,7 +13,7 @@ exports.handler = async (event) => {
     try {
       const auth2 = getAuth(app);
 
-      await signOut(auth2);
+      await signOut(auth);
       return {
         ...headers,
         statusCode: 200,
@@ -24,14 +24,14 @@ exports.handler = async (event) => {
         }),
       };
     } catch (error) {
-      return {
-        ...headers,
-        statusCode: 200,
-        body: JSON.stringify({
-          error: error.message,
-          data: null,
-        }),
-      };
+      // return {
+      //   ...headers,
+      //   statusCode: 200,
+      //   body: JSON.stringify({
+      //     error: error.message,
+      //     data: null,
+      //   }),
+      // };
     }
   }
 
