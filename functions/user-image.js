@@ -33,15 +33,13 @@ exports.handler = async (event) => {
 
     await uploadString(storageRef, file, "base64");
 
-    const url = await getDownloadURL(storageRef);
-
     return {
       ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
         data: {
-          url,
+          url: `${firebaseConfig.storagePublicURL}/${firebaseConfig.config.storageBucket}/${storageRef.fullPath}`,
         },
         message: null,
       }),

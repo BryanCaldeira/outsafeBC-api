@@ -12,4 +12,5 @@ module.exports = {
     measurementId: "G-QPG084P9N6",
   },
   firestoreURL: "gs://campbuddy-4944b.appspot.com",
+  storagePublicURL: "https://storage.googleapis.com",
 };

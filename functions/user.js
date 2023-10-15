@@ -257,7 +257,7 @@ const remove = async (event) => {
     const auth2 = getAuth(app);
 
     try {
-      await deleteFirebaseUser(auth2.currentUser);
+      await deleteFirebaseUser(auth.currentUser);
     } catch (error) {
       // return {
       //   ...headers,
