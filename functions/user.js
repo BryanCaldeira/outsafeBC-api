@@ -259,14 +259,14 @@ const remove = async (event) => {
     try {
       await deleteFirebaseUser(auth2.currentUser);
     } catch (error) {
-      return {
-        ...headers,
-        statusCode: 200,
-        body: JSON.stringify({
-          error: "Something went wrong. User was not deleted.",
-          data: null,
-        }),
-      };
+      // return {
+      //   ...headers,
+      //   statusCode: 200,
+      //   body: JSON.stringify({
+      //     error: "Something went wrong. User was not deleted.",
+      //     data: null,
+      //   }),
+      // };
     }
 
     const response = await deleteUser(user.uid);
