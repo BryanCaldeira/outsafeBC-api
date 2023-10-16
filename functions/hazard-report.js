@@ -36,7 +36,13 @@ class HazardReport {
         : hazardType,
     };
     this.comment = "No comments";
-    this.images = [faker.image.url, faker.image.url, faker.image.url];
+    this.created_at = new Date().toISOString();
+    this.updated_at = new Date().toISOString();
+    (this.user = {
+      email: faker.internet.email(),
+      name: faker.person.fullName(),
+    }),
+      (this.images = [faker.image.url(), faker.image.url(), faker.image.url()]);
   }
 }
 
@@ -85,7 +91,7 @@ const remove = async (event) => {
 };
 
 const get = async (event) => {
-  const { cursor, size } = event.queryStringParameters;
+  const { cursor, size, user_id, type } = event.queryStringParameters;
 
   const reportList = [];
 
