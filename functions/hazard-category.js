@@ -11,7 +11,7 @@ const HAZARD_CATEGORY_LIST = [
 const HAZARD_OPTIONS = {
   wildlife: ["Bear", "Wolf"],
   weather: ["Flood", "Storm"],
-  wildfire: [],
+  wildfire: ["Wildfire"],
   infrastructure: ["Bridge", "Road"],
 };
 
@@ -33,6 +33,7 @@ const get = async (_event) => {
   const list = HAZARD_CATEGORY_LIST.map((category) => ({
     id: faker.string.uuid(),
     name: category,
+    icon: `${category}-icon`,
     description: faker.lorem.words(10),
     options: HAZARD_OPTIONS[category].map((option) => ({
       id: faker.string.uuid(),
