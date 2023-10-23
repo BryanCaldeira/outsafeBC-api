@@ -1,5 +1,9 @@
 const { faker } = require("@faker-js/faker");
 const headers = require("../utils/headers");
+const {
+  getOptionsByCategory,
+  getCategoryOptionsById,
+} = require("../sql/category-options");
 
 const HAZARD_CATEGORY_LIST = [
   "wildlife",
@@ -30,8 +34,7 @@ class HazardOption {
     };
   }
 }
-
-const get = async (event) => {
+const getMocked = async (event) => {
   const { categoryId } = event.queryStringParameters;
 
   const hazardCategory = faker.helpers.arrayElement(HAZARD_CATEGORY_LIST);
@@ -54,7 +57,7 @@ const get = async (event) => {
   };
 };
 
-const getById = async (event) => {
+const getByIdMocked = async (event) => {
   const { id } = event.queryStringParameters;
 
   const hazadOption = new HazardOption();
@@ -67,6 +70,78 @@ const getById = async (event) => {
       message: null,
     }),
   };
+};
+
+const get = async (event) => {
+  try {
+    const { categoryId } = event.queryStringParameters;
+
+    const response = await getOptionsByCategory(categoryId);
+
+    const data = response.rows.map((option) => ({
+      categoryId: option.category_id,
+      id: option.id,
+      name: option.name,
+      description: option.description,
+    }));
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data,
+        message: null,
+        error: null,
+      }),
+    };
+  } catch (error) {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: "Unexpected error when retrieving options.",
+        data: null,
+        message: null,
+      }),
+    };
+  }
+};
+
+const getById = async (event) => {
+  try {
+    const { id } = event.queryStringParameters;
+
+    const response = await getCategoryOptionsById(id);
+
+    const option = response.rows[0];
+
+    const data = {
+      categoryId: option.category_id,
+      id: option.id,
+      name: option.name,
+      description: option.description,
+    };
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data,
+        message: null,
+        error: null,
+      }),
+    };
+  } catch (error) {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: "Unexpected error when retrieving options.",
+        data: null,
+        message: null,
+      }),
+    };
+  }
 };
 
 exports.handler = async (event) => {
