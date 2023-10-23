@@ -110,7 +110,7 @@ const create = async (event) => {
     const auth = getAuth(app);
 
     const body = JSON.parse(event.body);
-    const { email, password } = body;
+    const { email, password, name } = body;
 
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -122,7 +122,7 @@ const create = async (event) => {
 
     const response = await createUser(
       firebaseUser?.uid,
-      firebaseUser?.displayName,
+      name,
       firebaseUser?.email,
       "password",
       firebaseUser?.photoURL ?? ""
@@ -138,7 +138,7 @@ const create = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name: firebaseUser?.displayName,
+          name: name,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,
