@@ -100,7 +100,7 @@ const get = async (_event) => {
   } catch (error) {
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: "Unexpected error when retrieving categories.",
         data: null,
@@ -154,7 +154,7 @@ const getById = async (event) => {
   } catch (error) {
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: "Unexpected error when retrieving category.",
         data: null,

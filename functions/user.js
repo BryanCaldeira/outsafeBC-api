@@ -68,10 +68,11 @@ const handleGoogleProvider = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
+        message: null,
       }),
     };
   }
@@ -95,7 +96,7 @@ const get = async (event) => {
   } catch (error) {
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: error.message,
         data: null,
@@ -158,7 +159,7 @@ const create = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -215,7 +216,7 @@ const update = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -293,7 +294,7 @@ const remove = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
