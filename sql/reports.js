@@ -36,6 +36,7 @@ async function getReports(data) {
     size = 10,
     cursor = 0,
     radius = 50,
+    count_only = false,
   } = data;
   const params = [];
 
@@ -90,27 +91,32 @@ async function getReports(data) {
     where += ` where ${params.join(" and ")}`;
   }
 
-  const countQuery = ` , 
-  (SELECT COUNT(*) 
+  const countQuery = `
+  SELECT COUNT(*) 
   FROM hazard_reports hr ${where.replaceAll(" r.", " hr.")}
-  ) as count`;
+  `;
 
   if (cursor > -1) {
     params.push(`r.index > ${cursor}`);
     where = ` where ${params.join(" and ")} `;
   }
-
-  const queryString = `select r.*, c.name as category_name, co.id as hazard_option_id, co.name as hazard_option_name
-  ${countQuery}
+  if (!count_only) {
+    const queryString = `select r.*, c.name as category_name, co.id as hazard_option_id, co.name as hazard_option_name
+  , (${countQuery}) as count
    from hazard_reports r
        join category_options co on co.id = r.category_option_id
        join categories c on c.id = co.category_id
        ${where} ORDER BY r.index asc LIMIT ${size}
    `;
-  //   console.log(queryString);
-  const response = await SQLClient.query(queryString);
+    //   console.log(queryString);
+    const response = await SQLClient.query(queryString);
 
-  return response;
+    return response;
+  } else {
+    const response = await SQLClient.query(countQuery);
+
+    return response;
+  }
 }
 
 async function getReportsById(reportId) {

@@ -162,6 +162,7 @@ const get = async (event) => {
     cursor = 0,
     size = 10,
     radius = 5,
+    count_only = false,
   } = event.queryStringParameters;
 
   // const reportList = [];
@@ -181,6 +182,7 @@ const get = async (event) => {
     cursor,
     size,
     radius,
+    count_only,
   });
 
   const reportList = queryResponse.rows;
