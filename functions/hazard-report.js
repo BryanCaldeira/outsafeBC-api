@@ -1,5 +1,11 @@
 const { faker } = require("@faker-js/faker");
 const headers = require("../utils/headers");
+const {
+  getReports,
+  getReportsById,
+  createReport,
+  deleteReport,
+} = require("../sql/reports");
 
 class HazardReport {
   constructor() {
@@ -46,18 +52,70 @@ class HazardReport {
   }
 }
 
-const create = async (_event) => {
-  const report = new HazardReport();
+const create = async (event) => {
+  try {
+    const {
+      userId,
+      hazardOptionId,
+      location: { lat, lng, address },
+      comment = "",
+      images = [],
+    } = JSON.parse(event.body);
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: report,
-      message: "Hazard report created successfully",
-    }),
-  };
+    if (!lat || !lng || !hazardOptionId || !images.length) {
+      const fields = [
+        ["latitude", lat],
+        ["longitud", lng],
+        ["hazard", hazardOptionId],
+        ["images", !!images.length],
+      ].filter((data) => !data[1]);
+
+      const message = `
+        <ul>
+          ${fields.map((field) => `<li>${field[0]} is required</li>`)}
+        </ul>`;
+
+      return {
+        ...headers,
+        statusCode: 500,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message,
+        }),
+      };
+    }
+
+    const queryResponse = await createReport({
+      latitude: lat,
+      longitude: lng,
+      address,
+      category_option_id: hazardOptionId,
+      comment,
+      images,
+      user_id: userId,
+    });
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: queryResponse.rows?.[0],
+        message: "Hazard report created successfully",
+      }),
+    };
+  } catch (error) {
+    return {
+      ...headers,
+      statusCode: 500,
+      body: JSON.stringify({
+        error: null,
+        data: null,
+        message: error.message,
+      }),
+    };
+  }
 };
 
 const update = async (event) => {
@@ -76,30 +134,61 @@ const update = async (event) => {
 };
 
 const remove = async (event) => {
-  const report = new HazardReport();
-  const { id } = event.queryStringParameters;
+  // const report = new HazardReport();
+  try {
+    const { id } = event.queryStringParameters;
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: { ...report, id },
-      message: "Hazard report deleted successfully",
-    }),
-  };
+    const queryResponse = await deleteReport(id);
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: queryResponse.rows?.[0],
+        message: "Hazard report deleted successfully",
+      }),
+    };
+  } catch (error) {}
 };
 
 const get = async (event) => {
-  const { cursor, size, user_id, type } = event.queryStringParameters;
+  const {
+    user_id,
+    type,
+    lat,
+    lng,
+    hazard_option_ids = "",
+    cursor = 0,
+    size = 10,
+    radius = 5,
+  } = event.queryStringParameters;
 
-  const reportList = [];
+  // const reportList = [];
 
-  const limit = +size >= 100 ? 100 : +size;
+  // const limit = +size >= 100 ? 100 : +size;
 
-  for (let index = 0; index < limit; index++) {
-    reportList.push(new HazardReport());
-  }
+  // for (let index = 0; index < limit; index++) {
+  //   reportList.push(new HazardReport());
+  // }
+
+  const queryResponse = await getReports({
+    user_id,
+    lat,
+    lng,
+    hazard_option_ids: hazard_option_ids.split(",").filter((id) => !!id),
+    type,
+    cursor,
+    size,
+    radius,
+  });
+
+  const reportList = queryResponse.rows;
+
+  const lastRow = reportList[reportList.length - 1];
+
+  const after =
+    Number(cursor + size) < Number(lastRow?.count ?? 0) ? lastRow?.index : null;
 
   return {
     ...headers,
@@ -109,8 +198,8 @@ const get = async (event) => {
       data: {
         results: reportList,
         size: +size,
-        after: +cursor + +size,
-        total: 100,
+        after,
+        total: lastRow?.count ?? 0,
       },
       message: "",
     }),
@@ -119,14 +208,16 @@ const get = async (event) => {
 
 const getById = async (event) => {
   const { id } = event.queryStringParameters;
-  const report = new HazardReport();
+  // const report = new HazardReport();
+
+  const queryResponse = await getReportsById(id);
 
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: { ...report, id: id },
+      data: queryResponse.rows?.[0],
       message: "",
     }),
   };
