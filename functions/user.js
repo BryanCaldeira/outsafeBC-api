@@ -306,6 +306,16 @@ const remove = async (event) => {
 exports.handler = async (event) => {
   const { provider, id } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "POST" && provider === "password") {
     const response = await create(event);
     return response;
@@ -316,7 +326,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if ((event.httpMethod === "PUT" || event.httpMethod === "OPTIONS") && !!id) {
+  if (event.httpMethod === "PUT" && !!id) {
     const response = await update(event);
     return response;
   }
@@ -326,7 +336,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if (event.httpMethod === "DELETE" || event.httpMethod === "OPTIONS") {
+  if (event.httpMethod === "DELETE") {
     const response = await remove(event);
     return response;
   }
