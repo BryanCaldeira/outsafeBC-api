@@ -135,6 +135,16 @@ const getById = async (event) => {
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "POST") {
     const response = await create(event);
     return response;

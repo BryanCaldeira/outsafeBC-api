@@ -4,6 +4,16 @@ const headers = require("../utils/headers");
 exports.handler = async (event) => {
   const { user_id } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "GET") {
     if (!user_id) {
       return {

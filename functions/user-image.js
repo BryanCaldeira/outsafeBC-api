@@ -15,6 +15,16 @@ const storage = getStorage(app, firebaseConfig.firestoreURL);
 exports.handler = async (event) => {
   const { userId } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (!userId) {
     return {
       ...headers,

@@ -167,6 +167,16 @@ const getById = async (event) => {
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "GET" && !id) {
     const response = await get(event);
     return response;
