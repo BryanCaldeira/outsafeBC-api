@@ -192,13 +192,45 @@ const get = async (event) => {
   const after =
     Number(cursor + size) < Number(lastRow?.count ?? 0) ? lastRow?.index : null;
 
+  const results = reportList.map((report) => {
+    return {
+      id: report.id,
+      location: {
+        lat: Number(report.latitude),
+        lng: Number(report.longitude),
+        address: report.address ?? "",
+      },
+      hazardCategory: {
+        id: report.category_option_id,
+        name: report.category_name,
+        //  "hasOptions":true
+      },
+      hazard: {
+        id: report.hazard_option_id,
+        name: report.hazard_option_name,
+      },
+      comment: report.comments ?? "",
+      created_at: report.created_at,
+      updated_at: report.updated_at,
+      deleted_at: report.deleted_at,
+      still_there_count: report.still_there_count ?? 0,
+      not_there_count: report.not_there_count ?? 0,
+      flagged_count: report.flagged_count ?? 0,
+      user: {
+        email: report.user_email,
+        name: report.user_name,
+      },
+      images: report.images,
+      index: Number(report.index),
+    };
+  });
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
       data: {
-        results: reportList,
+        results,
         size: +size,
         after,
         total: lastRow?.count ?? 0,

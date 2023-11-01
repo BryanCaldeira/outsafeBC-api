@@ -101,11 +101,12 @@ async function getReports(data) {
     where = ` where ${params.join(" and ")} `;
   }
   if (!count_only) {
-    const queryString = `select r.*, c.name as category_name, co.id as hazard_option_id, co.name as hazard_option_name
+    const queryString = `select r.*, c.name as category_name, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
   , (${countQuery}) as count
    from hazard_reports r
        join category_options co on co.id = r.category_option_id
        join categories c on c.id = co.category_id
+       left join users u on u.id = r.user_id
        ${where} ORDER BY r.index asc LIMIT ${size}
    `;
     //   console.log(queryString);
