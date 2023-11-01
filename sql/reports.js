@@ -229,10 +229,41 @@ async function createReport(data) {
   return response;
 }
 
+async function updateReport(data) {
+  const {
+    id,
+    user_id,
+    latitude,
+    longitude,
+    address,
+    category_option_id,
+    comment,
+    images,
+  } = data;
+
+  const query = `update hazard_reports set 
+  latitude = ${latitude}, 
+  longitude = ${longitude}, 
+  address = '${address}', 
+  category_option_id = '${category_option_id}', 
+  comments = '${comment ?? ""}', 
+  images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]
+  where id = '${id}' and user_id = '${user_id}'
+
+   returning *
+ `;
+
+  console.log({ query });
+  const response = await SQLClient.query(query);
+
+  return response;
+}
+
 module.exports = {
   getReports,
   getReportsById,
   deleteReport,
   createReportEndorsement,
   createReport,
+  updateReport,
 };

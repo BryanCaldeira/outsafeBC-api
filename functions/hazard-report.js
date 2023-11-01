@@ -5,6 +5,7 @@ const {
   getReportsById,
   createReport,
   deleteReport,
+  updateReport,
 } = require("../sql/reports");
 const { getCategoryOptionsById } = require("../sql/category-options");
 
@@ -69,6 +70,7 @@ const create = async (event) => {
         ["longitud", lng],
         ["hazard", hazardOptionId],
         ["images", !!images.length],
+        ["user", userId],
       ].filter((data) => !data[1]);
 
       const message = `
@@ -167,18 +169,133 @@ const create = async (event) => {
 };
 
 const update = async (event) => {
-  const report = new HazardReport();
-  const { id } = event.queryStringParameters;
+  try {
+    const { id } = event.queryStringParameters;
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: { ...report, id },
-      message: "Hazard report updated successfully",
-    }),
-  };
+    const {
+      userId,
+      hazardOptionId,
+      location: { lat, lng, address },
+      comment = "",
+      images = [],
+    } = JSON.parse(event.body);
+
+    if (!lat || !lng || !hazardOptionId || !images.length || !userId || !id) {
+      const fields = [
+        ["latitude", lat],
+        ["longitud", lng],
+        ["hazard", hazardOptionId],
+        ["images", !!images.length],
+        ["user", userId],
+        ["id", id],
+      ].filter((data) => !data[1]);
+
+      const message = `
+        <ul>
+          ${fields.map((field) => `<li>${field[0]} is required</li>`)}
+        </ul>`;
+
+      return {
+        ...headers,
+        statusCode: 500,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message,
+        }),
+      };
+    }
+
+    const queryResponse = await updateReport({
+      latitude: lat,
+      longitude: lng,
+      address,
+      category_option_id: hazardOptionId,
+      comment,
+      images,
+      user_id: userId,
+      id,
+    });
+
+    if (!queryResponse.rowCount) {
+      return {
+        ...headers,
+        statusCode: 200,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message: "No hazard report found",
+        }),
+      };
+    }
+
+    const result = queryResponse.rows.map((report) => {
+      return {
+        id: report.id,
+        location: {
+          lat: Number(report.latitude),
+          lng: Number(report.longitude),
+          address: report.address ?? "",
+        },
+        hazardCategory: {
+          // id: report.category_option_id,
+          // name: report.category_name,
+          //  "hasOptions":true
+        },
+        hazard: {
+          id: report.category_option_id,
+          // name: report.hazard_option_name,
+        },
+        comment: report.comments ?? "",
+        created_at: report.created_at,
+        updated_at: report.updated_at,
+        deleted_at: report.deleted_at,
+        still_there_count: report.still_there_count ?? 0,
+        not_there_count: report.not_there_count ?? 0,
+        flagged_count: report.flagged_count ?? 0,
+        images: report.images,
+        index: Number(report.index),
+      };
+    });
+
+    const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
+
+    const data = { ...result?.[0] };
+    if (hazardOptionQuery.rowCount > 0) {
+      const hazardOption = hazardOptionQuery.rows[0];
+
+      data.hazardCategory = {
+        id: hazardOption.category_id,
+        name: hazardOption.category_name,
+      };
+
+      data.hazard = {
+        id: hazardOptionId,
+        name: hazardOption.name,
+      };
+    }
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: data,
+        message: "Hazard report updated successfully",
+      }),
+    };
+  } catch (error) {
+    console.log({ error });
+    return {
+      ...headers,
+      statusCode: 500,
+      body: JSON.stringify({
+        error: null,
+        data: null,
+        message: error.message,
+      }),
+    };
+  }
 };
 
 const remove = async (event) => {
