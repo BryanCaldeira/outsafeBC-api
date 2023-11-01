@@ -6,6 +6,7 @@ const {
   createReport,
   deleteReport,
 } = require("../sql/reports");
+const { getCategoryOptionsById } = require("../sql/category-options");
 
 class HazardReport {
   constructor() {
@@ -96,16 +97,63 @@ const create = async (event) => {
       user_id: userId,
     });
 
+    const result = queryResponse.rows.map((report) => {
+      return {
+        id: report.id,
+        location: {
+          lat: Number(report.latitude),
+          lng: Number(report.longitude),
+          address: report.address ?? "",
+        },
+        hazardCategory: {
+          // id: report.category_option_id,
+          // name: report.category_name,
+          //  "hasOptions":true
+        },
+        hazard: {
+          id: report.category_option_id,
+          // name: report.hazard_option_name,
+        },
+        comment: report.comments ?? "",
+        created_at: report.created_at,
+        updated_at: report.updated_at,
+        deleted_at: report.deleted_at,
+        still_there_count: report.still_there_count ?? 0,
+        not_there_count: report.not_there_count ?? 0,
+        flagged_count: report.flagged_count ?? 0,
+        images: report.images,
+        index: Number(report.index),
+      };
+    });
+
+    const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
+
+    const data = { ...result?.[0] };
+    if (hazardOptionQuery.rowCount > 0) {
+      const hazardOption = hazardOptionQuery.rows[0];
+
+      data.hazardCategory = {
+        id: hazardOption.category_id,
+        name: hazardOption.category_name,
+      };
+
+      data.hazard = {
+        id: hazardOptionId,
+        name: hazardOption.name,
+      };
+    }
+
     return {
       ...headers,
       statusCode: 200,
       body: JSON.stringify({
         error: null,
-        data: queryResponse.rows?.[0],
+        data: data,
         message: "Hazard report created successfully",
       }),
     };
   } catch (error) {
+    console.log({ error });
     return {
       ...headers,
       statusCode: 500,
