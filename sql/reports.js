@@ -217,10 +217,17 @@ async function createReport(data) {
     user_id,
   } = data;
 
-  const query = `insert into hazard_reports (latitude, longitude, address, category_option_id, comments, images, user_id)
+  const insertImages = images.length
+    ? `, ARRAY [${images
+        .map((image) => `'${image}'`)
+        .join(",")}], '${user_id}' )`
+    : ", '{}'::text[]";
+
+  const query = `insert into hazard_reports (latitude, longitude, address, category_option_id, comments, user_id , images)
   values (${latitude}, ${longitude}, '${address}', '${category_option_id}', '${
     comment ?? ""
-  }', ARRAY [${images.map((image) => `'${image}'`).join(",")}], '${user_id}' )
+  }', '${user_id}'  ${insertImages} )
+ 
    returning *
  `;
 
@@ -241,13 +248,17 @@ async function updateReport(data) {
     images,
   } = data;
 
+  const updateImages = images.length
+    ? ` , images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]`
+    : ",images =  '{}'::text[] ";
+
   const query = `update hazard_reports set 
   latitude = ${latitude}, 
   longitude = ${longitude}, 
   address = '${address}', 
   category_option_id = '${category_option_id}', 
-  comments = '${comment ?? ""}', 
-  images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]
+  comments = '${comment ?? ""}'
+  ${updateImages}
   where id = '${id}' and user_id = '${user_id}'
 
    returning *

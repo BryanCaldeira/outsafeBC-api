@@ -64,12 +64,12 @@ const create = async (event) => {
       images = [],
     } = JSON.parse(event.body);
 
-    if (!lat || !lng || !hazardOptionId || !images.length) {
+    if (!lat || !lng || !hazardOptionId) {
       const fields = [
         ["latitude", lat],
         ["longitud", lng],
         ["hazard", hazardOptionId],
-        ["images", !!images.length],
+        // ["images", !!images.length],
         ["user", userId],
       ].filter((data) => !data[1]);
 
@@ -180,12 +180,12 @@ const update = async (event) => {
       images = [],
     } = JSON.parse(event.body);
 
-    if (!lat || !lng || !hazardOptionId || !images.length || !userId || !id) {
+    if (!lat || !lng || !hazardOptionId || !userId || !id) {
       const fields = [
         ["latitude", lat],
         ["longitud", lng],
         ["hazard", hazardOptionId],
-        ["images", !!images.length],
+        // ["images", !!images.length],
         ["user", userId],
         ["id", id],
       ].filter((data) => !data[1]);
