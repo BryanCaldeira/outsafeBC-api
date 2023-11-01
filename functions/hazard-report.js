@@ -135,16 +135,6 @@ const getById = async (event) => {
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
 
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      ...headers,
-      statusCode: 200,
-      body: JSON.stringify({
-        data: null,
-      }),
-    };
-  }
-
   if (event.httpMethod === "POST") {
     const response = await create(event);
     return response;
@@ -175,12 +165,23 @@ exports.handler = async (event) => {
     return response;
   }
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
-      error: "Invalid request",
+      error: `${event.httpMethod} is not configured yet`,
       data: null,
+      message: null,
     }),
   };
 };
