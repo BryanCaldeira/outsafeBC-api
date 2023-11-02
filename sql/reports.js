@@ -102,7 +102,7 @@ async function getReports(data) {
     where = ` where ${params.join(" and ")} `;
   }
   if (!count_only) {
-    const queryString = `select r.*, c.id as category_id, c.name as category_name, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
+    const queryString = `select r.*, c.id as category_id, c.name as category_name, c.ui_settings as category_settings, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
   , (${countQuery}) as count
    from hazard_reports r
        join category_options co on co.id = r.category_option_id
@@ -123,7 +123,7 @@ async function getReports(data) {
 
 async function getReportsById(reportId) {
   const response = await SQLClient.query(
-    `select r.*, co.name as hazard_option_name, c.id as category_id, c.name as category_name, u.name as user_name, u.email as user_email from hazard_reports r 
+    `select r.*, co.name as hazard_option_name, c.id as category_id, c.name as category_name,c.ui_settings as category_settings, u.name as user_name, u.email as user_email from hazard_reports r 
     join category_options co on r.category_option_id = co.id
     join categories c on co.category_id = c.id
     left join users u on r.user_id = u.id

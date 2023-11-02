@@ -139,6 +139,7 @@ const create = async (event) => {
       data.hazardCategory = {
         id: hazardOption.category_id,
         name: hazardOption.category_name,
+        settings: hazardOption.category_settings,
       };
 
       data.hazard = {
@@ -408,6 +409,7 @@ const get = async (event) => {
       hazardCategory: {
         id: report.category_id,
         name: report.category_name,
+        settings: report.category_settings,
         //  "hasOptions":true
       },
       hazard: {
@@ -462,6 +464,7 @@ const getById = async (event) => {
       hazardCategory: {
         id: report.category_id,
         name: report.category_name,
+        settings: report.category_settings,
         //  "hasOptions":true
       },
       hazard: {
