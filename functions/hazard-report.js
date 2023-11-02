@@ -1,5 +1,13 @@
 const { faker } = require("@faker-js/faker");
 const headers = require("../utils/headers");
+const {
+  getReports,
+  getReportsById,
+  createReport,
+  deleteReport,
+  updateReport,
+} = require("../sql/reports");
+const { getCategoryOptionsById } = require("../sql/category-options");
 
 const PushNotifications = require("@pusher/push-notifications-server");
 
@@ -48,108 +56,389 @@ class HazardReport {
   }
 }
 
-const create = async (_event) => {
-  const report = new HazardReport();
+const create = async (event) => {
+  try {
+    const {
+      userId,
+      hazardOptionId,
+      location: { lat, lng, address },
+      comment = "",
+      images = [],
+    } = JSON.parse(event.body);
 
-  const Pusher = require("pusher");
+    if (!lat || !lng || !hazardOptionId) {
+      const fields = [
+        ["latitude", lat],
+        ["longitud", lng],
+        ["hazard", hazardOptionId],
+        // ["images", !!images.length],
+        ["user", userId],
+      ].filter((data) => !data[1]);
 
-  const pusher = new Pusher({
-    appId: "1691608",
-    key: "353ae3f7ae29d42e5749",
-    secret: "b393684fbb996abf150a",
-    cluster: "us3",
-    useTLS: true,
-  });
+      const message = `
+        <ul>
+          ${fields.map((field) => `<li>${field[0]} is required</li>`)}
+        </ul>`;
 
-  pusher.trigger("my-channel", "my-event", {
-    message: "hello world",
-  });
+      return {
+        ...headers,
+        statusCode: 500,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message,
+        }),
+      };
+    }
 
-  // let beamsClient = new PushNotifications({
-  //   instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
-  //   secretKey:
-  //     "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
-  // });
+    const queryResponse = await createReport({
+      latitude: lat,
+      longitude: lng,
+      address,
+      category_option_id: hazardOptionId,
+      comment,
+      images,
+      user_id: userId,
+    });
 
-  // beamsClient
-  //   .publishToInterests(["hello"], {
-  //     web: {
-  //       notification: {
-  //         title: "Hello",
-  //         body: "Hello, world Wonnyo!",
-  //         deep_link: "https://www.pusher.com",
-  //       },
-  //     },
-  //   })
-  //   .then((publishResponse) => {
-  //     console.log("Just published:", publishResponse.publishId);
-  //   })
-  //   .catch((error) => {
-  //     console.log("Error:", error);
-  //   });
+    const result = queryResponse.rows.map((report) => {
+      return {
+        id: report.id,
+        location: {
+          lat: Number(report.latitude),
+          lng: Number(report.longitude),
+          address: report.address ?? "",
+        },
+        hazardCategory: {
+          // id: report.category_option_id,
+          // name: report.category_name,
+          //  "hasOptions":true
+        },
+        hazard: {
+          id: report.category_option_id,
+          // name: report.hazard_option_name,
+        },
+        comment: report.comments ?? "",
+        created_at: report.created_at,
+        updated_at: report.updated_at,
+        deleted_at: report.deleted_at,
+        still_there_count: report.still_there_count ?? 0,
+        not_there_count: report.not_there_count ?? 0,
+        flagged_count: report.flagged_count ?? 0,
+        images: report.images,
+        index: Number(report.index),
+      };
+    });
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: report,
-      message: "Hazard report created successfully",
-    }),
-  };
+    const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
+
+    const data = { ...result?.[0] };
+    if (hazardOptionQuery.rowCount > 0) {
+      const hazardOption = hazardOptionQuery.rows[0];
+
+      data.hazardCategory = {
+        id: hazardOption.category_id,
+        name: hazardOption.category_name,
+      };
+
+      data.hazard = {
+        id: hazardOptionId,
+        name: hazardOption.name,
+      };
+    }
+
+    const Pusher = require("pusher");
+
+    const pusher = new Pusher({
+      appId: "1691608",
+      key: "353ae3f7ae29d42e5749",
+      secret: "b393684fbb996abf150a",
+      cluster: "us3",
+      useTLS: true,
+    });
+
+    pusher.trigger("my-channel", "my-event", {
+      message: "hello world",
+    });
+
+    // let beamsClient = new PushNotifications({
+    //   instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
+    //   secretKey:
+    //     "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
+    // });
+
+    // beamsClient
+    //   .publishToInterests(["hello"], {
+    //     web: {
+    //       notification: {
+    //         title: "Hello",
+    //         body: "Hello, world Wonnyo!",
+    //         deep_link: "https://www.pusher.com",
+    //       },
+    //     },
+    //   })
+    //   .then((publishResponse) => {
+    //     console.log("Just published:", publishResponse.publishId);
+    //   })
+    //   .catch((error) => {
+    //     console.log("Error:", error);
+    //   });
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: data,
+        message: "Hazard report created successfully",
+      }),
+    };
+  } catch (error) {
+    console.log({ error });
+    return {
+      ...headers,
+      statusCode: 500,
+      body: JSON.stringify({
+        error: null,
+        data: null,
+        message: error.message,
+      }),
+    };
+  }
 };
 
 const update = async (event) => {
-  const report = new HazardReport();
-  const { id } = event.queryStringParameters;
+  try {
+    const { id } = event.queryStringParameters;
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: { ...report, id },
-      message: "Hazard report updated successfully",
-    }),
-  };
+    const {
+      userId,
+      hazardOptionId,
+      location: { lat, lng, address },
+      comment = "",
+      images = [],
+    } = JSON.parse(event.body);
+
+    if (!lat || !lng || !hazardOptionId || !userId || !id) {
+      const fields = [
+        ["latitude", lat],
+        ["longitud", lng],
+        ["hazard", hazardOptionId],
+        // ["images", !!images.length],
+        ["user", userId],
+        ["id", id],
+      ].filter((data) => !data[1]);
+
+      const message = `
+        <ul>
+          ${fields.map((field) => `<li>${field[0]} is required</li>`)}
+        </ul>`;
+
+      return {
+        ...headers,
+        statusCode: 500,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message,
+        }),
+      };
+    }
+
+    const queryResponse = await updateReport({
+      latitude: lat,
+      longitude: lng,
+      address,
+      category_option_id: hazardOptionId,
+      comment,
+      images,
+      user_id: userId,
+      id,
+    });
+
+    if (!queryResponse.rowCount) {
+      return {
+        ...headers,
+        statusCode: 200,
+        body: JSON.stringify({
+          error: null,
+          data: null,
+          message: "No hazard report found",
+        }),
+      };
+    }
+
+    const result = queryResponse.rows.map((report) => {
+      return {
+        id: report.id,
+        location: {
+          lat: Number(report.latitude),
+          lng: Number(report.longitude),
+          address: report.address ?? "",
+        },
+        hazardCategory: {
+          // id: report.category_option_id,
+          // name: report.category_name,
+          //  "hasOptions":true
+        },
+        hazard: {
+          id: report.category_option_id,
+          // name: report.hazard_option_name,
+        },
+        comment: report.comments ?? "",
+        created_at: report.created_at,
+        updated_at: report.updated_at,
+        deleted_at: report.deleted_at,
+        still_there_count: report.still_there_count ?? 0,
+        not_there_count: report.not_there_count ?? 0,
+        flagged_count: report.flagged_count ?? 0,
+        images: report.images,
+        index: Number(report.index),
+      };
+    });
+
+    const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
+
+    const data = { ...result?.[0] };
+    if (hazardOptionQuery.rowCount > 0) {
+      const hazardOption = hazardOptionQuery.rows[0];
+
+      data.hazardCategory = {
+        id: hazardOption.category_id,
+        name: hazardOption.category_name,
+      };
+
+      data.hazard = {
+        id: hazardOptionId,
+        name: hazardOption.name,
+      };
+    }
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: data,
+        message: "Hazard report updated successfully",
+      }),
+    };
+  } catch (error) {
+    console.log({ error });
+    return {
+      ...headers,
+      statusCode: 500,
+      body: JSON.stringify({
+        error: null,
+        data: null,
+        message: error.message,
+      }),
+    };
+  }
 };
 
 const remove = async (event) => {
-  const report = new HazardReport();
-  const { id } = event.queryStringParameters;
+  // const report = new HazardReport();
+  try {
+    const { id } = event.queryStringParameters;
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: null,
-      data: { ...report, id },
-      message: "Hazard report deleted successfully",
-    }),
-  };
+    const queryResponse = await deleteReport(id);
+
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        error: null,
+        data: queryResponse.rows?.[0],
+        message: "Hazard report deleted successfully",
+      }),
+    };
+  } catch (error) {}
 };
 
 const get = async (event) => {
-  const { cursor, size, user_id, type } = event.queryStringParameters;
+  const {
+    user_id,
+    type,
+    lat,
+    lng,
+    hazard_option_ids = "",
+    cursor = 0,
+    size = 10,
+    radius = 5,
+    count_only = false,
+  } = event.queryStringParameters;
 
-  const reportList = [];
+  // const reportList = [];
 
-  const limit = +size >= 100 ? 100 : +size;
+  // const limit = +size >= 100 ? 100 : +size;
 
-  for (let index = 0; index < limit; index++) {
-    reportList.push(new HazardReport());
-  }
+  // for (let index = 0; index < limit; index++) {
+  //   reportList.push(new HazardReport());
+  // }
 
+  const queryResponse = await getReports({
+    user_id,
+    lat,
+    lng,
+    hazard_option_ids: hazard_option_ids.split(",").filter((id) => !!id),
+    type,
+    cursor,
+    size,
+    radius,
+    count_only,
+  });
+
+  const reportList = queryResponse.rows;
+
+  const lastRow = reportList[reportList.length - 1];
+
+  const after =
+    Number(cursor + size) < Number(lastRow?.count ?? 0) ? lastRow?.index : null;
+
+  const results = reportList.map((report) => {
+    console.log({ report });
+    return {
+      id: report.id,
+      location: {
+        lat: Number(report.latitude),
+        lng: Number(report.longitude),
+        address: report.address ?? "",
+      },
+      hazardCategory: {
+        id: report.category_id,
+        name: report.category_name,
+        //  "hasOptions":true
+      },
+      hazard: {
+        id: report.category_option_id,
+        name: report.hazard_option_name,
+      },
+      comment: report.comments ?? "",
+      created_at: report.created_at,
+      updated_at: report.updated_at,
+      deleted_at: report.deleted_at,
+      still_there_count: report.still_there_count ?? 0,
+      not_there_count: report.not_there_count ?? 0,
+      flagged_count: report.flagged_count ?? 0,
+      user: {
+        email: report.user_email,
+        name: report.user_name,
+      },
+      images: report.images,
+      index: Number(report.index),
+    };
+  });
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
       data: {
-        results: reportList,
+        results,
         size: +size,
-        after: +cursor + +size,
-        total: 100,
+        after,
+        total: lastRow?.count ?? 0,
       },
       message: "",
     }),
@@ -158,14 +447,49 @@ const get = async (event) => {
 
 const getById = async (event) => {
   const { id } = event.queryStringParameters;
-  const report = new HazardReport();
+  // const report = new HazardReport();
+
+  const queryResponse = await getReportsById(id);
+
+  const results = queryResponse.rows.map((report) => {
+    return {
+      id: report.id,
+      location: {
+        lat: Number(report.latitude),
+        lng: Number(report.longitude),
+        address: report.address ?? "",
+      },
+      hazardCategory: {
+        id: report.category_id,
+        name: report.category_name,
+        //  "hasOptions":true
+      },
+      hazard: {
+        id: report.category_option_id,
+        name: report.hazard_option_name,
+      },
+      comment: report.comments ?? "",
+      created_at: report.created_at,
+      updated_at: report.updated_at,
+      deleted_at: report.deleted_at,
+      still_there_count: report.still_there_count ?? 0,
+      not_there_count: report.not_there_count ?? 0,
+      flagged_count: report.flagged_count ?? 0,
+      user: {
+        email: report.user_email,
+        name: report.user_name,
+      },
+      images: report.images,
+      index: Number(report.index),
+    };
+  });
 
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
       error: null,
-      data: { ...report, id: id },
+      data: results?.[0],
       message: "",
     }),
   };
@@ -204,12 +528,23 @@ exports.handler = async (event) => {
     return response;
   }
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   return {
     ...headers,
     statusCode: 200,
     body: JSON.stringify({
-      error: "Invalid request",
+      error: `${event.httpMethod} is not configured yet`,
       data: null,
+      message: null,
     }),
   };
 };

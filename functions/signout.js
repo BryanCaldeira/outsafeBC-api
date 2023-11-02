@@ -9,6 +9,16 @@ const app = initializeApp(firebaseConfig.config);
 exports.handler = async (event) => {
   const auth = JSON.parse(event.body);
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "POST" && !!auth?.currentUser) {
     try {
       const auth2 = getAuth(app);

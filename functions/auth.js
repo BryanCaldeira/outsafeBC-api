@@ -70,7 +70,7 @@ const handleEmailAndPassword = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -126,7 +126,7 @@ const handleGoogleProvider = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,

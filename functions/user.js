@@ -68,10 +68,11 @@ const handleGoogleProvider = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
+        message: null,
       }),
     };
   }
@@ -95,7 +96,7 @@ const get = async (event) => {
   } catch (error) {
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: error.message,
         data: null,
@@ -109,7 +110,7 @@ const create = async (event) => {
     const auth = getAuth(app);
 
     const body = JSON.parse(event.body);
-    const { email, password } = body;
+    const { email, password, name } = body;
 
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -121,7 +122,7 @@ const create = async (event) => {
 
     const response = await createUser(
       firebaseUser?.uid,
-      firebaseUser?.displayName,
+      name,
       firebaseUser?.email,
       "password",
       firebaseUser?.photoURL ?? ""
@@ -137,7 +138,7 @@ const create = async (event) => {
         data: {
           id: user?.id,
           createdAt: user?.created_at,
-          name: firebaseUser?.displayName,
+          name: name,
           email: firebaseUser?.email,
           photo: firebaseUser?.photoURL,
           stsTokenManager: firebaseUser?.stsTokenManager,
@@ -158,7 +159,7 @@ const create = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -215,7 +216,7 @@ const update = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -293,7 +294,7 @@ const remove = async (event) => {
 
     return {
       ...headers,
-      statusCode: 200,
+      statusCode: 500,
       body: JSON.stringify({
         error: errorMessage,
         data: null,
@@ -305,6 +306,16 @@ const remove = async (event) => {
 exports.handler = async (event) => {
   const { provider, id } = event.queryStringParameters;
 
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      ...headers,
+      statusCode: 200,
+      body: JSON.stringify({
+        data: null,
+      }),
+    };
+  }
+
   if (event.httpMethod === "POST" && provider === "password") {
     const response = await create(event);
     return response;
@@ -315,7 +326,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if ((event.httpMethod === "PUT" || event.httpMethod === "OPTIONS") && !!id) {
+  if (event.httpMethod === "PUT" && !!id) {
     const response = await update(event);
     return response;
   }
@@ -325,7 +336,7 @@ exports.handler = async (event) => {
     return response;
   }
 
-  if (event.httpMethod === "DELETE" || event.httpMethod === "OPTIONS") {
+  if (event.httpMethod === "DELETE") {
     const response = await remove(event);
     return response;
   }
