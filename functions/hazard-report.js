@@ -158,8 +158,8 @@ const create = async (event) => {
       useTLS: true,
     });
 
-    pusher.trigger("my-channel", "my-event", {
-      message: "hello world",
+    pusher.trigger("reports-channel", "new-report", {
+      message: JSON.stringify(data),
     });
 
     // let beamsClient = new PushNotifications({
@@ -486,6 +486,18 @@ const getById = async (event) => {
       index: Number(report.index),
     };
   });
+
+  const Pusher = require("pusher");
+
+  const pusher = new Pusher({
+    appId: "1691608",
+    key: "353ae3f7ae29d42e5749",
+    secret: "b393684fbb996abf150a",
+    cluster: "us3",
+    useTLS: true,
+  });
+
+  pusher.trigger("reports-channel", "new-report", results?.[0]);
 
   return {
     ...headers,
