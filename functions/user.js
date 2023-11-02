@@ -122,7 +122,7 @@ const create = async (event) => {
 
     const response = await createUser(
       firebaseUser?.uid,
-      name,
+      name ?? "",
       firebaseUser?.email,
       "password",
       firebaseUser?.photoURL ?? ""
@@ -186,7 +186,7 @@ const update = async (event) => {
       };
     }
 
-    const response = await updateUser(id, name, photo);
+    const response = await updateUser(id, name ?? "", photo ?? "");
 
     const user = response?.rows?.[0];
 

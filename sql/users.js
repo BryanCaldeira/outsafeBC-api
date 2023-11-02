@@ -10,19 +10,13 @@ async function getUser(id) {
 
 async function getUserWithFirebase(id) {
   const response = await SQLClient.query(
-    `select * from users where firebase_user_id = '${id}' `
+    `select u.*, n.is_enabled as notifications_enabled from users u left join notifications n on n.user_id = u.id where u.firebase_user_id = '${id}' `
   );
 
   return response;
 }
 
-async function createUser(
-  firebase_user_id,
-  name,
-  email,
-  provider,
-  photo
-) {
+async function createUser(firebase_user_id, name, email, provider, photo) {
   const response = await SQLClient.query(
     `insert into users (firebase_user_id, name, email,  provider, photo) 
     values 
