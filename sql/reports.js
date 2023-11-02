@@ -72,7 +72,7 @@ async function getReports(data) {
     );
   }
 
-  if (type === "recent" && type === "past") {
+  if (type === "recent" || type === "past") {
     params.push(
       `${
         type === "recent"
@@ -82,6 +82,7 @@ async function getReports(data) {
     );
   }
 
+  console.log({ params });
   params.push("r.deleted_at isnull");
 
   let where = "";
