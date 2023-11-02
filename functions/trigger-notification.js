@@ -65,7 +65,7 @@ const getById = async (event) => {
       web: {
         notification: {
           title: "Outsafe BC",
-          body: "New Hazard has been reported!",
+          body: "[TEST] New Hazard has been reported!",
         },
         data: results?.[0],
       },
