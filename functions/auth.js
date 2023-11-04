@@ -102,7 +102,6 @@ const handleGoogleProvider = async (event) => {
           accessToken: firebaseUser?.accessToken,
           metadata: firebaseUser?.metadata,
           notifications_enabled: user?.notifications_enabled,
-
           auth,
         },
       }),

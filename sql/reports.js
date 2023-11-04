@@ -32,6 +32,7 @@ async function getReports(data) {
     lat,
     lng,
     hazard_option_ids,
+    category_ids,
     type,
     size = 10,
     cursor = 0,
@@ -70,6 +71,10 @@ async function getReports(data) {
     params.push(
       `co.id in (${hazard_option_ids.map((id) => `'${id}'`).join(",")})`
     );
+  }
+
+  if (category_ids && category_ids.length) {
+    params.push(`c.id in (${category_ids.map((id) => `'${id}'`).join(",")})`);
   }
 
   if (type === "recent" || type === "past") {
