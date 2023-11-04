@@ -43,63 +43,49 @@ const getById = async (event) => {
     };
   });
 
-  try {
-    const Pusher = require("pusher");
-
-    const pusher = new Pusher({
-      appId: "1691608",
-      key: "353ae3f7ae29d42e5749",
-      secret: "b393684fbb996abf150a",
-      cluster: "us3",
-      useTLS: true,
-    });
-
-    pusher.trigger("reports-channel", "new-report", results?.[0]);
-  } catch (error) {
-    return {
-      ...headers,
-      statusCode: 200,
-      body: JSON.stringify({
-        error: error,
-        data: results?.[0],
-        message: "",
-      }),
-    };
-  }
-
-  // let beamsClient = new PushNotifications({
-  //   instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
-  //   secretKey:
-  //     "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
+  // const Pusher = require("pusher");
+  // const pusher = new Pusher({
+  //   appId: "1691608",
+  //   key: "353ae3f7ae29d42e5749",
+  //   secret: "b393684fbb996abf150a",
+  //   cluster: "us3",
+  //   useTLS: true,
   // });
+  // pusher.trigger("reports-channel", "new-report", results?.[0]);
 
-  // const users = await getUsers();
+  let beamsClient = new PushNotifications({
+    instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
+    secretKey:
+      "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
+  });
 
-  // if (users.rowCount > 0) {
-  //   beamsClient
-  //     .publishToInterests(
-  //       [
-  //         ...users.rows
-  //           .map((user) => user.id)
-  //           .filter((id) => id !== results?.[0].user.email),
-  //       ],
-  //       {
-  //         web: {
-  //           notification: {
-  //             title: "Outsafe BC",
-  //             body: "New Hazard has been reported!",
-  //           },
-  //           data: results?.[0],
-  //         },
-  //       }
-  //     )
-  //     .then((publishResponse) => {
-  //       console.log("Just published:", publishResponse.publishId);
-  //     })
-  //     .catch((error) => {
-  //       console.log("Error:", error);
-  //     });
-  // }
+  const users = await getUsers();
+
+  if (users.rowCount > 0) {
+    beamsClient
+      .publishToInterests(
+        [
+          ...users.rows
+            .map((user) => user.id)
+            .filter((id) => id !== results?.[0].user.email),
+        ],
+        {
+          web: {
+            notification: {
+              title: "Outsafe BC",
+              body: "New Hazard has been reported!",
+            },
+            data: results?.[0],
+          },
+        }
+      )
+      .then((publishResponse) => {
+        console.log("Just published:", publishResponse.publishId);
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      });
+  }
 
   return {
     ...headers,

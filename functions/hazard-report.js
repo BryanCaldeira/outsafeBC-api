@@ -148,17 +148,17 @@ const create = async (event) => {
       };
     }
 
-    const Pusher = require("pusher");
+    // const Pusher = require("pusher");
 
-    const pusher = new Pusher({
-      appId: "1691608",
-      key: "353ae3f7ae29d42e5749",
-      secret: "b393684fbb996abf150a",
-      cluster: "us3",
-      useTLS: true,
-    });
+    // const pusher = new Pusher({
+    //   appId: "1691608",
+    //   key: "353ae3f7ae29d42e5749",
+    //   secret: "b393684fbb996abf150a",
+    //   cluster: "us3",
+    //   useTLS: true,
+    // });
 
-    pusher.trigger("reports-channel", "new-report", data);
+    // pusher.trigger("reports-channel", "new-report", data);
 
     let beamsClient = new PushNotifications({
       instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
