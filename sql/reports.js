@@ -87,7 +87,6 @@ async function getReports(data) {
     );
   }
 
-  console.log({ params });
   params.push("r.deleted_at isnull");
 
   let where = "";
@@ -97,15 +96,21 @@ async function getReports(data) {
     where += ` where ${params.join(" and ")}`;
   }
 
+  console.log({ params, where });
+
   const countQuery = `
   SELECT COUNT(*) 
-  FROM hazard_reports hr ${where.replaceAll(" r.", " hr.")}
+  FROM hazard_reports hr  join category_options co on co.id = hr.category_option_id
+  join categories c on c.id = co.category_id
+  left join users u on u.id = hr.user_id ${where.replaceAll(" r.", " hr.")}
   `;
 
   if (cursor > -1) {
     params.push(`r.index > ${cursor}`);
     where = ` where ${params.join(" and ")} `;
   }
+  console.log({ countQuery });
+
   if (!count_only) {
     const queryString = `select r.*, c.id as category_id, c.name as category_name, c.ui_settings as category_settings, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
   , (${countQuery}) as count
