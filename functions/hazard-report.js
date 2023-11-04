@@ -91,7 +91,7 @@ const create = async (event) => {
       };
     }
 
-    const queryResponse = await createReport({
+    const { rows } = await createReport({
       latitude: lat,
       longitude: lng,
       address,
@@ -101,52 +101,52 @@ const create = async (event) => {
       user_id: userId,
     });
 
-    const result = queryResponse.rows.map((report) => {
-      return {
-        id: report.id,
-        location: {
-          lat: Number(report.latitude),
-          lng: Number(report.longitude),
-          address: report.address ?? "",
-        },
-        hazardCategory: {
-          // id: report.category_option_id,
-          // name: report.category_name,
-          //  "hasOptions":true
-        },
-        hazard: {
-          id: report.category_option_id,
-          // name: report.hazard_option_name,
-        },
-        comment: report.comments ?? "",
-        created_at: report.created_at,
-        updated_at: report.updated_at,
-        deleted_at: report.deleted_at,
-        still_there_count: report.still_there_count ?? 0,
-        not_there_count: report.not_there_count ?? 0,
-        flagged_count: report.flagged_count ?? 0,
-        images: report.images,
-        index: Number(report.index),
-      };
-    });
+    // const result = queryResponse.rows.map((report) => {
+    //   return {
+    //     id: report.id,
+    //     location: {
+    //       lat: Number(report.latitude),
+    //       lng: Number(report.longitude),
+    //       address: report.address ?? "",
+    //     },
+    //     hazardCategory: {
+    //       // id: report.category_option_id,
+    //       // name: report.category_name,
+    //       //  "hasOptions":true
+    //     },
+    //     hazard: {
+    //       id: report.category_option_id,
+    //       // name: report.hazard_option_name,
+    //     },
+    //     comment: report.comments ?? "",
+    //     created_at: report.created_at,
+    //     updated_at: report.updated_at,
+    //     deleted_at: report.deleted_at,
+    //     still_there_count: report.still_there_count ?? 0,
+    //     not_there_count: report.not_there_count ?? 0,
+    //     flagged_count: report.flagged_count ?? 0,
+    //     images: report.images,
+    //     index: Number(report.index),
+    //   };
+    // });
 
-    const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
+    // const hazardOptionQuery = await getCategoryOptionsById(hazardOptionId);
 
-    const data = { ...result?.[0] };
-    if (hazardOptionQuery.rowCount > 0) {
-      const hazardOption = hazardOptionQuery.rows[0];
+    // const data = { ...result?.[0] };
+    // if (hazardOptionQuery.rowCount > 0) {
+    //   const hazardOption = hazardOptionQuery.rows[0];
 
-      data.hazardCategory = {
-        id: hazardOption.category_id,
-        name: hazardOption.category_name,
-        settings: hazardOption.category_settings,
-      };
+    //   data.hazardCategory = {
+    //     id: hazardOption.category_id,
+    //     name: hazardOption.category_name,
+    //     settings: hazardOption.category_settings,
+    //   };
 
-      data.hazard = {
-        id: hazardOptionId,
-        name: hazardOption.name,
-      };
-    }
+    //   data.hazard = {
+    //     id: hazardOptionId,
+    //     name: hazardOption.name,
+    //   };
+    // }
 
     // const Pusher = require("pusher");
 
@@ -159,6 +159,41 @@ const create = async (event) => {
     // });
 
     // pusher.trigger("reports-channel", "new-report", data);
+
+    const queryResponse = await getReportsById(rows?.[0]?.id);
+
+    const results = queryResponse.rows.map((report) => {
+      return {
+        id: report.id,
+        location: {
+          lat: Number(report.latitude),
+          lng: Number(report.longitude),
+          address: report.address ?? "",
+        },
+        hazardCategory: {
+          id: report.category_id,
+          name: report.category_name,
+          settings: report.category_settings,
+        },
+        hazard: {
+          id: report.category_option_id,
+          name: report.hazard_option_name,
+        },
+        comment: report.comments ?? "",
+        created_at: report.created_at,
+        updated_at: report.updated_at,
+        deleted_at: report.deleted_at,
+        still_there_count: report.still_there_count ?? 0,
+        not_there_count: report.not_there_count ?? 0,
+        flagged_count: report.flagged_count ?? 0,
+        user: {
+          email: report.user_email,
+          name: report.user_name,
+        },
+        images: report.images,
+        index: Number(report.index),
+      };
+    });
 
     let beamsClient = new PushNotifications({
       instanceId: "db0b4e69-d055-47b5-a8bf-784a5157b8d6",
@@ -174,7 +209,7 @@ const create = async (event) => {
           [
             ...users.rows
               .map((user) => user.id)
-              .filter((id) => id !== data.user.email),
+              .filter((id) => id !== results?.[0]?.user?.email),
           ],
           {
             web: {
@@ -182,7 +217,7 @@ const create = async (event) => {
                 title: "Outsafe BC",
                 body: "New Hazard has been reported!",
               },
-              data: data,
+              data: results?.[0],
             },
           }
         )
@@ -199,7 +234,7 @@ const create = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         error: null,
-        data: data,
+        data: results?.[0],
         message: "Hazard report created successfully",
       }),
     };
