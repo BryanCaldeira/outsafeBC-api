@@ -96,7 +96,7 @@ async function getReports(data) {
     where += ` where ${params.join(" and ")}`;
   }
 
-  console.log({ params, where });
+  // console.log({ params, where });
 
   const countQuery = `
   SELECT COUNT(*) 
@@ -109,7 +109,7 @@ async function getReports(data) {
     params.push(`r.index > ${cursor}`);
     where = ` where ${params.join(" and ")} `;
   }
-  console.log({ countQuery });
+  // console.log({ countQuery });
 
   if (!count_only) {
     const queryString = `select r.*, c.id as category_id, c.name as category_name, c.ui_settings as category_settings, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
@@ -243,7 +243,7 @@ async function createReport(data) {
    returning *
  `;
 
-  console.log({ query });
+  // console.log({ query });
   const response = await SQLClient.query(query);
 
   return response;
@@ -277,7 +277,7 @@ async function updateReport(data) {
    returning *
  `;
 
-  console.log({ query });
+  // console.log({ query });
   const response = await SQLClient.query(query);
 
   return response;

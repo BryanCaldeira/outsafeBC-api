@@ -2,6 +2,7 @@ const headers = require("../utils/headers");
 const { getReportsById } = require("../sql/reports");
 
 const PushNotifications = require("@pusher/push-notifications-server");
+const { getUsers } = require("../sql/users");
 
 const getById = async (event) => {
   const { id } = event.queryStringParameters;
@@ -60,22 +61,33 @@ const getById = async (event) => {
       "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
   });
 
-  beamsClient
-    .publishToInterests(["all"], {
-      web: {
-        notification: {
-          title: "Outsafe BC",
-          body: "[TEST] New Hazard has been reported!",
-        },
-        data: results?.[0],
-      },
-    })
-    .then((publishResponse) => {
-      console.log("Just published:", publishResponse.publishId);
-    })
-    .catch((error) => {
-      console.log("Error:", error);
-    });
+  const users = await getUsers();
+
+  if (users.rowCount > 0) {
+    beamsClient
+      .publishToInterests(
+        [
+          ...users.rows
+            .map((user) => user.id)
+            .filter((id) => id !== results?.[0].user.email),
+        ],
+        {
+          web: {
+            notification: {
+              title: "Outsafe BC",
+              body: "New Hazard has been reported!",
+            },
+            data: results?.[0],
+          },
+        }
+      )
+      .then((publishResponse) => {
+        console.log("Just published:", publishResponse.publishId);
+      })
+      .catch((error) => {
+        console.log("Error:", error);
+      });
+  }
 
   return {
     ...headers,

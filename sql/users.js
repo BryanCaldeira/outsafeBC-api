@@ -1,5 +1,11 @@
 const SQLClient = require("./index.js");
 
+async function getUsers() {
+  const response = await SQLClient.query(`select * from users`);
+
+  return response;
+}
+
 async function getUser(id) {
   const response = await SQLClient.query(
     `select * from users where id = '${id}' `
@@ -74,6 +80,7 @@ async function deleteUser(firebaseUserId) {
 }
 
 module.exports = {
+  getUsers,
   getUser,
   createUser,
   updateUser,

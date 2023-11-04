@@ -9,6 +9,7 @@ const {
 } = require("../sql/reports");
 const { getCategoryOptionsById } = require("../sql/category-options");
 const PushNotifications = require("@pusher/push-notifications-server");
+const { getUsers } = require("../sql/users");
 
 class HazardReport {
   constructor() {
@@ -165,22 +166,33 @@ const create = async (event) => {
         "40CBBE3DF7615DAC8130477B2A30F515F0AF7E07FE84D6338ACDF654567F9DA7",
     });
 
-    beamsClient
-      .publishToInterests(["all"], {
-        web: {
-          notification: {
-            title: "Outsafe BC",
-            body: "New Hazard has been reported!",
-          },
-          data: data,
-        },
-      })
-      .then((publishResponse) => {
-        console.log("Just published:", publishResponse.publishId);
-      })
-      .catch((error) => {
-        console.log("Error:", error);
-      });
+    const users = await getUsers();
+
+    if (users.rowCount > 0) {
+      beamsClient
+        .publishToInterests(
+          [
+            ...users.rows
+              .map((user) => user.id)
+              .filter((id) => id !== data.user.email),
+          ],
+          {
+            web: {
+              notification: {
+                title: "Outsafe BC",
+                body: "New Hazard has been reported!",
+              },
+              data: data,
+            },
+          }
+        )
+        .then((publishResponse) => {
+          console.log("Just published:", publishResponse.publishId);
+        })
+        .catch((error) => {
+          console.log("Error:", error);
+        });
+    }
 
     return {
       ...headers,
