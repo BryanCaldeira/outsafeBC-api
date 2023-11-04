@@ -219,19 +219,21 @@ async function createReport(data) {
   } = data;
 
   const insertImages = images.length
-    ? `, ARRAY [${images
-        .map((image) => `'${image}'`)
-        .join(",")}], '${user_id}' )`
-    : ", '{}'::text[]";
+    ? ` ARRAY [${images.map((image) => `'${image}'`).join(",")}] `
+    : " '{}'::text[]";
 
   const query = `insert into hazard_reports (latitude, longitude, address, category_option_id, comments, user_id , images)
-  values (${latitude}, ${longitude}, '${address}', '${category_option_id}', '${
+  values (${latitude}, ${longitude}, '${address?.replace(
+    /["']/g,
+    ""
+  )}', '${category_option_id}', '${
     comment ?? ""
-  }', '${user_id}'  ${insertImages} )
+  }', '${user_id}' , ${insertImages} )
  
    returning *
  `;
 
+  console.log({ query });
   const response = await SQLClient.query(query);
 
   return response;
