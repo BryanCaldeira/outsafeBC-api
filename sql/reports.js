@@ -75,7 +75,7 @@ async function getReports(data) {
   if (type === "recent" || type === "past") {
     params.push(
       `${
-        type === "recent"
+        type === "past"
           ? `r.created_at <= (CURRENT_DATE - INTERVAL '2 days')`
           : `r.created_at > (CURRENT_DATE - INTERVAL '2 days')`
       }`
