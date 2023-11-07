@@ -523,6 +523,7 @@ const getById = async (event) => {
       user: {
         email: report.user_email,
         name: report.user_name,
+        photo: report.user_photo,
       },
       images: report.images,
       index: Number(report.index),
