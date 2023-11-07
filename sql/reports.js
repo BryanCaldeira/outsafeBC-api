@@ -112,7 +112,7 @@ async function getReports(data) {
   // console.log({ countQuery });
 
   if (!count_only) {
-    const queryString = `select r.*, c.id as category_id, c.name as category_name, c.ui_settings as category_settings, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email
+    const queryString = `select r.*, c.id as category_id, c.name as category_name, c.ui_settings as category_settings, co.id as hazard_option_id, co.name as hazard_option_name, u.name as user_name, u.email as user_email, u.photo as user_photo
   , (${countQuery}) as count
    from hazard_reports r
        join category_options co on co.id = r.category_option_id
