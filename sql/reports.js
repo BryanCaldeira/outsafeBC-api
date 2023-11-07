@@ -45,27 +45,27 @@ async function getReports(data) {
     params.push(`user_id = '${user_id}'`);
   }
 
-  if (!!lat && !!lng) {
-    const extraRadius = (+radius * 0.0449) / 5;
-    const minLat = Math.abs(+lat) - extraRadius;
-    const maxLat = Math.abs(+lat) + extraRadius;
+  // if (!!lat && !!lng) {
+  //   const extraRadius = (+radius * 0.0449) / 5;
+  //   const minLat = Math.abs(+lat) - extraRadius;
+  //   const maxLat = Math.abs(+lat) + extraRadius;
 
-    // console.log(extraRadius / Math.cos(+lat));
-    const minLng = Math.abs(+lng) - extraRadius / Math.cos(+lat);
-    const maxLng = Math.abs(+lng) + extraRadius / Math.cos(+lat);
+  //   // console.log(extraRadius / Math.cos(+lat));
+  //   const minLng = Math.abs(+lng) - extraRadius / Math.cos(+lat);
+  //   const maxLng = Math.abs(+lng) + extraRadius / Math.cos(+lat);
 
-    if (+lat < 0) {
-      params.push(`r.latitude <= ${-minLat} and r.latitude >= ${-maxLat}`);
-    } else {
-      params.push(`r.latitude >= ${minLat} and r.latitude <= ${maxLat}`);
-    }
+  //   if (+lat < 0) {
+  //     params.push(`r.latitude <= ${-minLat} and r.latitude >= ${-maxLat}`);
+  //   } else {
+  //     params.push(`r.latitude >= ${minLat} and r.latitude <= ${maxLat}`);
+  //   }
 
-    if (+lng < 0) {
-      params.push(`r.longitude <= ${-minLng} and r.longitude >= ${-maxLng}`);
-    } else {
-      params.push(`r.longitude >= ${minLng} and r.longitude <= ${maxLng}`);
-    }
-  }
+  //   if (+lng < 0) {
+  //     params.push(`r.longitude <= ${-minLng} and r.longitude >= ${-maxLng}`);
+  //   } else {
+  //     params.push(`r.longitude >= ${minLng} and r.longitude <= ${maxLng}`);
+  //   }
+  // }
 
   if (hazard_option_ids && hazard_option_ids.length) {
     params.push(
@@ -105,10 +105,10 @@ async function getReports(data) {
   left join users u on u.id = hr.user_id ${where.replaceAll(" r.", " hr.")}
   `;
 
-  if (cursor > -1) {
-    params.push(`r.index > ${cursor}`);
-    where = ` where ${params.join(" and ")} `;
-  }
+  // if (cursor > -1) {
+  //   params.push(`r.index > ${cursor}`);
+  //   where = ` where ${params.join(" and ")} `;
+  // }
   // console.log({ countQuery });
 
   if (!count_only) {
@@ -118,7 +118,7 @@ async function getReports(data) {
        join category_options co on co.id = r.category_option_id
        join categories c on c.id = co.category_id
        left join users u on u.id = r.user_id
-       ${where} ORDER BY r.index asc LIMIT ${size}
+       ${where} ORDER BY r.index asc 
    `;
     //   console.log(queryString);
     const response = await SQLClient.query(queryString);
