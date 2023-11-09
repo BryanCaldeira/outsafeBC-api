@@ -174,7 +174,7 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
   const isStillThere = selectEndorsement.rows[0]?.still_there === true;
 
   // insert into endorsed_reports defaulted to is_active true
-  const response = await SQLClient.query(
+  await SQLClient.query(
     `
       BEGIN;
       ${
@@ -212,7 +212,48 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
            : ""
        }
     
-       select * from endorsed_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1;
+       COMMIT;
+      `
+  );
+
+  const response = await SQLClient.query(
+    `select * from hazard_reports where id = '${reportId}';`
+  );
+
+  return response;
+}
+
+async function getFlaggedReport(reportId, userId) {
+  const response = await SQLClient.query(
+    `select * from flagged_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' limit 1`
+  );
+
+  return response;
+}
+
+async function flagReport(reportId, userId) {
+  const selectFlaggedReport = await SQLClient.query(
+    `select * from flagged_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' limit 1`
+  );
+
+  const isAlreadyFlagged = selectFlaggedReport.rowCount > 0;
+
+  const response = await SQLClient.query(
+    `
+      BEGIN;
+      ${
+        !isAlreadyFlagged
+          ? `update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;`
+          : ""
+      }
+
+      insert into flagged_reports (user_id, hazard_report_id)
+       values (
+        '${userId}',
+        '${reportId}'
+       );
+    
+       select * from hazard_reports where id = '${reportId}';
        COMMIT;
       `
   );
@@ -347,4 +388,6 @@ module.exports = {
   createReport,
   updateReport,
   getEndorsedReports,
+  flagReport,
+  getFlaggedReport,
 };

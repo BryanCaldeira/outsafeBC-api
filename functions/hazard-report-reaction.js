@@ -32,8 +32,13 @@ const update = async (event) => {
       }
     }
 
-    const queryResponse = createReportEndorsement(id, user_id, still_there);
+    const queryResponse = await createReportEndorsement(
+      id,
+      user_id,
+      still_there
+    );
 
+    console.log({ queryResponse });
     if (!queryResponse.rowCount) {
       return {
         ...headers,
