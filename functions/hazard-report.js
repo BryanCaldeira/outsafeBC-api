@@ -6,6 +6,8 @@ const {
   createReport,
   deleteReport,
   updateReport,
+  getEndorsedReports,
+  getFlaggedReport,
 } = require("../sql/reports");
 const { getCategoryOptionsById } = require("../sql/category-options");
 const PushNotifications = require("@pusher/push-notifications-server");
@@ -495,9 +497,30 @@ const get = async (event) => {
 };
 
 const getById = async (event) => {
-  const { id } = event.queryStringParameters;
+  const { id, user_id } = event.queryStringParameters;
 
   const queryResponse = await getReportsById(id);
+
+  let flagResponse = null;
+  let reactionResponse = null;
+
+  let enable_reaction = true;
+
+  if (!!user_id) {
+    flagResponse = await getEndorsedReports(id, user_id);
+    reactionResponse = await getFlaggedReport(id, user_id);
+
+    if (reactionResponse?.rowCount > 0) {
+      const endorsement_date = reactionResponse.rows?.[0]?.created_at;
+
+      const diff = Math.abs(new Date() - new Date(endorsement_date));
+
+      const minutes = Math.floor(diff / 1000 / 60);
+      if (minutes < 30) {
+        enable_reaction = false;
+      }
+    }
+  }
 
   const results = queryResponse.rows.map((report) => {
     return {
@@ -528,6 +551,8 @@ const getById = async (event) => {
         name: report.user_name,
         photo: report.user_photo,
       },
+      flagged_as_fake: flagResponse?.rowCount > 0,
+      enable_reaction,
       images: report.images,
       index: Number(report.index),
     };

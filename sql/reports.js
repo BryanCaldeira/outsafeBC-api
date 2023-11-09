@@ -348,40 +348,6 @@ async function updateReport(data) {
   return response;
 }
 
-async function updateReportStatus(report_id) {
-  const {
-    id,
-    user_id,
-    latitude,
-    longitude,
-    address,
-    category_option_id,
-    comment,
-    images,
-  } = data;
-
-  const updateImages = images.length
-    ? ` , images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]`
-    : ",images =  '{}'::text[] ";
-
-  const query = `update hazard_reports set 
-  latitude = ${latitude}, 
-  longitude = ${longitude}, 
-  address = '${address}', 
-  category_option_id = '${category_option_id}', 
-  comments = '${comment ?? ""}'
-  ${updateImages}
-  where id = '${id}' and user_id = '${user_id}'
-
-   returning *
- `;
-
-  // console.log({ query });
-  const response = await SQLClient.query(query);
-
-  return response;
-}
-
 module.exports = {
   enableDeletedReport,
   getReports,
