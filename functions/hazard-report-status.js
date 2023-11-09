@@ -4,9 +4,9 @@ const { getCategoryOptionsById } = require("../sql/category-options");
 
 const update = async (event) => {
   try {
-    const { id, is_enabled = false } = event.queryStringParameters;
+    const { id, is_active = false } = event.queryStringParameters;
 
-    const queryResponse = is_enabled
+    const queryResponse = is_active
       ? await enableDeletedReport(id)
       : await deleteReport(id);
 
