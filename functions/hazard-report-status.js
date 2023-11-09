@@ -6,9 +6,9 @@ const update = async (event) => {
   try {
     const { id, is_enabled = false } = event.queryStringParameters;
 
-    const queryResponse = (await is_enabled)
-      ? enableDeletedReport(id)
-      : deleteReport(id);
+    const queryResponse = is_enabled
+      ? await enableDeletedReport(id)
+      : await deleteReport(id);
 
     if (!queryResponse.rowCount) {
       return {

@@ -222,7 +222,7 @@ async function deleteReport(reportId) {
 
 async function enableDeletedReport(reportId) {
   const response = await SQLClient.query(
-    `update hazard_reports set deleted_at = null where id = '${reportId}'
+    `update hazard_reports set deleted_at = NULL where id = '${reportId}'
      returning *`
   );
 
