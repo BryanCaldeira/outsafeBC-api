@@ -156,15 +156,24 @@ async function getReportsById(reportId) {
 //     return response;
 //   }
 
+async function getEndorsedReports(reportId, userId) {
+  const response = await SQLClient.query(
+    `select * from endorsed_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1`
+  );
+
+  return response;
+}
+
 async function createReportEndorsement(reportId, userId, stillThere = true) {
   const selectEndorsement = await SQLClient.query(
     `select * from endorsed_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1`
   );
 
   const isAlreadyEndorsed = selectEndorsement.rowCount > 0;
-  const isStillThere = selectEndorsement.rows[0]?.still_there === "true";
 
-  // insert into endorsed_reports defaulted to is_valid true
+  const isStillThere = selectEndorsement.rows[0]?.still_there === true;
+
+  // insert into endorsed_reports defaulted to is_active true
   const response = await SQLClient.query(
     `
       BEGIN;
@@ -181,7 +190,7 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
 
       ${
         isAlreadyEndorsed
-          ? `update endorsed_reports set is_valid = false where user_id = '${userId}' and hazard_report_id = '${reportId}';`
+          ? `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}';`
           : ""
       }
 
@@ -337,4 +346,5 @@ module.exports = {
   createReportEndorsement,
   createReport,
   updateReport,
+  getEndorsedReports,
 };
