@@ -38,6 +38,7 @@ async function getReports(data) {
     cursor = 0,
     radius = 50,
     count_only = false,
+    active_only = false,
   } = data;
   const params = [];
 
@@ -87,7 +88,9 @@ async function getReports(data) {
     );
   }
 
-  params.push("r.deleted_at isnull");
+  if (active_only) {
+    params.push("r.deleted_at isnull");
+  }
 
   let where = "";
 
@@ -138,7 +141,7 @@ async function getReportsById(reportId) {
     join categories c on co.category_id = c.id
     left join users u on r.user_id = u.id
     where 
-    r.id = '${reportId}' and r.deleted_at isnull
+    r.id = '${reportId}'
     `
   );
 
@@ -217,6 +220,15 @@ async function deleteReport(reportId) {
   return response;
 }
 
+async function enableDeletedReport(reportId) {
+  const response = await SQLClient.query(
+    `update hazard_reports set deleted_at = NULL where id = '${reportId}'
+     returning *`
+  );
+
+  return response;
+}
+
 async function createReport(data) {
   const {
     latitude,
@@ -283,7 +295,42 @@ async function updateReport(data) {
   return response;
 }
 
+async function updateReportStatus(report_id) {
+  const {
+    id,
+    user_id,
+    latitude,
+    longitude,
+    address,
+    category_option_id,
+    comment,
+    images,
+  } = data;
+
+  const updateImages = images.length
+    ? ` , images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]`
+    : ",images =  '{}'::text[] ";
+
+  const query = `update hazard_reports set 
+  latitude = ${latitude}, 
+  longitude = ${longitude}, 
+  address = '${address}', 
+  category_option_id = '${category_option_id}', 
+  comments = '${comment ?? ""}'
+  ${updateImages}
+  where id = '${id}' and user_id = '${user_id}'
+
+   returning *
+ `;
+
+  // console.log({ query });
+  const response = await SQLClient.query(query);
+
+  return response;
+}
+
 module.exports = {
+  enableDeletedReport,
   getReports,
   getReportsById,
   deleteReport,

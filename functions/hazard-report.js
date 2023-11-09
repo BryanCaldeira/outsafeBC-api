@@ -413,6 +413,7 @@ const get = async (event) => {
     size = 10,
     radius = 5,
     count_only = false,
+    active_only = false,
   } = event.queryStringParameters;
 
   // const reportList = [];
@@ -434,6 +435,7 @@ const get = async (event) => {
     size,
     radius,
     count_only,
+    active_only,
   });
 
   const reportList = queryResponse.rows;
