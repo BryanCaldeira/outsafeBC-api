@@ -238,7 +238,7 @@ async function flagReport(reportId, userId) {
 
   const isAlreadyFlagged = selectFlaggedReport.rowCount > 0;
 
-  const response = await SQLClient.query(
+  await SQLClient.query(
     `
       BEGIN;
       ${
@@ -253,9 +253,12 @@ async function flagReport(reportId, userId) {
         '${reportId}'
        );
     
-       select * from hazard_reports where id = '${reportId}';
        COMMIT;
       `
+  );
+
+  const response = await SQLClient.query(
+    ` select * from hazard_reports where id = '${reportId}'; `
   );
 
   return response;

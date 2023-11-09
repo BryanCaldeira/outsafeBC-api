@@ -1,42 +1,28 @@
 const headers = require("../utils/headers");
-const {
-  createReportEndorsement,
-  getEndorsedReports,
-} = require("../sql/reports");
+const { getFlaggedReport, flagReport } = require("../sql/reports");
 const { getCategoryOptionsById } = require("../sql/category-options");
 
 const update = async (event) => {
   try {
     const { id } = event.queryStringParameters;
 
-    const { user_id, still_there = true } = JSON.parse(event.body);
+    const { user_id } = JSON.parse(event.body);
 
-    const getEndorsementsQuery = await getEndorsedReports(id, user_id);
+    const getFlaggedQuery = await getFlaggedReport(id, user_id);
 
-    if (getEndorsementsQuery.rowCount > 0) {
-      const endorsement_date = getEndorsementsQuery.rows?.[0]?.created_at;
-
-      const diff = Math.abs(new Date() - new Date(endorsement_date));
-
-      const minutes = Math.floor(diff / 1000 / 60);
-      if (minutes < 30) {
-        return {
-          ...headers,
-          statusCode: 500,
-          body: JSON.stringify({
-            error: true,
-            data: null,
-            message: "You have already reacted to this report!",
-          }),
-        };
-      }
+    if (getFlaggedQuery.rowCount > 0) {
+      return {
+        ...headers,
+        statusCode: 500,
+        body: JSON.stringify({
+          error: true,
+          data: null,
+          message: "You have already flagged to this report!",
+        }),
+      };
     }
 
-    const queryResponse = await createReportEndorsement(
-      id,
-      user_id,
-      still_there
-    );
+    const queryResponse = await flagReport(id, user_id);
 
     if (!queryResponse.rowCount) {
       return {
