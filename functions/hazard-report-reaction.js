@@ -13,7 +13,7 @@ const update = async (event) => {
 
     const getEndorsementsQuery = await getEndorsedReports(id, user_id);
 
-    if (getEndorsementsQuery.rowCount > 0) {
+    if (getEndorsementsQuery?.rowCount > 0) {
       const endorsement_date = getEndorsementsQuery.rows?.[0]?.created_at;
 
       const diff = Math.abs(new Date() - new Date(endorsement_date));
@@ -22,7 +22,7 @@ const update = async (event) => {
       if (minutes < 30) {
         return {
           ...headers,
-          statusCode: 500,
+          statusCode: 200,
           body: JSON.stringify({
             error: true,
             data: null,
@@ -110,9 +110,9 @@ const update = async (event) => {
     console.log({ error });
     return {
       ...headers,
-      statusCode: 500,
+      statusCode: 200,
       body: JSON.stringify({
-        error: null,
+        error: error,
         data: null,
         message: error.message,
       }),
