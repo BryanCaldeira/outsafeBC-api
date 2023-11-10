@@ -191,15 +191,14 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
       ${
         isAlreadyEndorsed
           ? `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}';`
-          : ""
+          : ` insert into endorsed_reports (user_id, hazard_report_id, still_there)
+          values (
+           '${userId}',
+           '${reportId}',
+           ${stillThere}
+          );
+          `
       }
-
-      insert into endorsed_reports (user_id, hazard_report_id, still_there)
-       values (
-        '${userId}',
-        '${reportId}',
-        ${stillThere}
-       );
 
        ${
          !!stillThere
@@ -242,7 +241,7 @@ async function flagReport(reportId, userId) {
     `
       BEGIN;
       ${
-        !isAlreadyFlagged
+        !!isAlreadyFlagged
           ? `update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;`
           : ""
       }
