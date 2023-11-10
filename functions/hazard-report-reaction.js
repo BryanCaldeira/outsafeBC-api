@@ -24,9 +24,9 @@ const update = async (event) => {
           ...headers,
           statusCode: 200,
           body: JSON.stringify({
-            error: true,
+            error: "You have already reacted to this report!",
             data: null,
-            message: "You have already reacted to this report!",
+            message: "",
           }),
         };
       }
@@ -112,9 +112,9 @@ const update = async (event) => {
       ...headers,
       statusCode: 200,
       body: JSON.stringify({
-        error: error,
-        data: null,
-        message: error.message,
+        error: error.message,
+        data: error,
+        message: null,
       }),
     };
   }

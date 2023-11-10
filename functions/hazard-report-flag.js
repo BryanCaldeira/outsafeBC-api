@@ -15,9 +15,9 @@ const update = async (event) => {
         ...headers,
         statusCode: 500,
         body: JSON.stringify({
-          error: true,
+          error: "You have already flagged to this report!",
           data: null,
-          message: "You have already flagged to this report!",
+          message: "",
         }),
       };
     }
@@ -96,11 +96,11 @@ const update = async (event) => {
     console.log({ error });
     return {
       ...headers,
-      statusCode: 500,
+      statusCode: 200,
       body: JSON.stringify({
-        error: null,
-        data: null,
-        message: error.message,
+        error: error.message,
+        data: error,
+        message: null,
       }),
     };
   }
