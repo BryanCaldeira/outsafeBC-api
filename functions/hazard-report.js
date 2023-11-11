@@ -507,8 +507,8 @@ const getById = async (event) => {
   let enable_reaction = true;
 
   if (!!user_id) {
-    flagResponse = await getEndorsedReports(id, user_id);
-    reactionResponse = await getFlaggedReport(id, user_id);
+    flagResponse = await getFlaggedReport(id, user_id);
+    reactionResponse = await getEndorsedReports(id, user_id);
 
     if (reactionResponse?.rowCount > 0) {
       const endorsement_date = reactionResponse.rows?.[0]?.created_at;
