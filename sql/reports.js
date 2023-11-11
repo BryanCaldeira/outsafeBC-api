@@ -174,86 +174,80 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
 
     const isStillThere = selectEndorsement.rows[0]?.still_there === true;
 
-    await SQLClient.query("BEGIN");
     // insert into endorsed_reports defaulted to is_active true
-    if (isAlreadyEndorsed && isStillThere && !stillThere) {
-      await SQLClient.query(
-        `update hazard_reports set still_there_count = still_there_count - 1 where id = '${reportId}'`
-      );
-    }
+    // if (isAlreadyEndorsed && isStillThere && !stillThere) {
+    //   await SQLClient.query(
+    //     `update hazard_reports set still_there_count = still_there_count - 1 where id = '${reportId}'`
+    //   );
+    // }
 
-    if (isAlreadyEndorsed && !isStillThere && stillThere) {
-      await SQLClient.query(
-        `update hazard_reports set not_there_count = not_there_count - 1 where id = '${reportId}'`
-      );
-    }
+    // if (isAlreadyEndorsed && !isStillThere && stillThere) {
+    //   await SQLClient.query(
+    //     `update hazard_reports set not_there_count = not_there_count - 1 where id = '${reportId}'`
+    //   );
+    // }
 
-    if (isAlreadyEndorsed) {
-      await SQLClient.query(
-        `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}'`
-      );
-    } else {
-      await SQLClient.query(` insert into endorsed_reports (user_id, hazard_report_id, still_there)
-    values (
-     '${userId}',
-     '${reportId}',
-     ${stillThere}
-    );
-    `);
-    }
-
-    if (!!stillThere) {
-      await SQLClient.query(
-        `update hazard_reports set still_there_count = still_there_count + 1 where id = '${reportId}'`
-      );
-    } else {
-      await SQLClient.query(
-        `update hazard_reports set not_there_count = not_there_count + 1 where id = '${reportId}'`
-      );
-    }
-
-    // await SQLClient.query(
-    //   `
-    //     BEGIN;
-    //     ${
-    //       isAlreadyEndorsed && isStillThere && !stillThere
-    //         ? `update hazard_reports set still_there_count = still_there_count - 1 where id = '${reportId}' ;`
-    //         : ""
-    //     }
-    //     ${
-    //       isAlreadyEndorsed && !isStillThere && stillThere
-    //         ? `update hazard_reports set not_there_count = not_there_count - 1 where id = '${reportId}' ;`
-    //         : ""
-    //     }
-
-    //     ${
-    //       isAlreadyEndorsed
-    //         ? `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}';`
-    //         : ` insert into endorsed_reports (user_id, hazard_report_id, still_there)
-    //         values (
-    //          '${userId}',
-    //          '${reportId}',
-    //          ${stillThere}
-    //         );
-    //         `
-    //     }
-
-    //      ${
-    //        !!stillThere
-    //          ? `update hazard_reports set still_there_count = still_there_count + 1 where id = '${reportId}' ;`
-    //          : ""
-    //      }
-    //      ${
-    //        !stillThere
-    //          ? `update hazard_reports set not_there_count = not_there_count + 1 where id = '${reportId}' ;`
-    //          : ""
-    //      }
-
-    //      COMMIT;
-    //     `
+    // if (isAlreadyEndorsed) {
+    //   await SQLClient.query(
+    //     `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}'`
+    //   );
+    // } else {
+    //   await SQLClient.query(` insert into endorsed_reports (user_id, hazard_report_id, still_there)
+    // values (
+    //  '${userId}',
+    //  '${reportId}',
+    //  ${stillThere}
     // );
+    // `);
+    // }
 
-    await SQLClient.query("COMMIT");
+    // if (!!stillThere) {
+    //   await SQLClient.query(
+    //     `update hazard_reports set still_there_count = still_there_count + 1 where id = '${reportId}'`
+    //   );
+    // } else {
+    //   await SQLClient.query(
+    //     `update hazard_reports set not_there_count = not_there_count + 1 where id = '${reportId}'`
+    //   );
+    // }
+
+    await SQLClient.query(
+      `
+        ${
+          isAlreadyEndorsed && isStillThere && !stillThere
+            ? `update hazard_reports set still_there_count = still_there_count - 1 where id = '${reportId}' ;`
+            : ""
+        }
+        ${
+          isAlreadyEndorsed && !isStillThere && stillThere
+            ? `update hazard_reports set not_there_count = not_there_count - 1 where id = '${reportId}' ;`
+            : ""
+        }
+
+        ${
+          isAlreadyEndorsed
+            ? `update endorsed_reports set is_active = false where user_id = '${userId}' and hazard_report_id = '${reportId}';`
+            : ` insert into endorsed_reports (user_id, hazard_report_id, still_there)
+            values (
+             '${userId}',
+             '${reportId}',
+             ${stillThere}
+            );
+            `
+        }
+
+         ${
+           !!stillThere
+             ? `update hazard_reports set still_there_count = still_there_count + 1 where id = '${reportId}' ;`
+             : ""
+         }
+         ${
+           !stillThere
+             ? `update hazard_reports set not_there_count = not_there_count + 1 where id = '${reportId}' ;`
+             : ""
+         }
+        `
+    );
 
     const response = await SQLClient.query(
       `select * from hazard_reports where id = '${reportId}';`
@@ -261,7 +255,7 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
 
     return response;
   } catch (error) {
-    await SQLClient.query("ROLLBACK");
+    // await SQLClient.query("ROLLBACK");
     const response = await SQLClient.query(
       `select * from hazard_reports where id = '${reportId}';`
     );
@@ -287,7 +281,6 @@ async function flagReport(reportId, userId) {
 
   await SQLClient.query(
     `
-      BEGIN;
       ${
         !!isAlreadyFlagged
           ? `update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;`
@@ -300,7 +293,7 @@ async function flagReport(reportId, userId) {
         '${reportId}'
        );
     
-       COMMIT;
+  
       `
   );
 
