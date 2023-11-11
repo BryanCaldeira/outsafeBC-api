@@ -253,7 +253,7 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
     //     `
     // );
 
-    await client.query("COMMIT");
+    await SQLClient.query("COMMIT");
 
     const response = await SQLClient.query(
       `select * from hazard_reports where id = '${reportId}';`
@@ -261,7 +261,7 @@ async function createReportEndorsement(reportId, userId, stillThere = true) {
 
     return response;
   } catch (error) {
-    await client.query("ROLLBACK");
+    await SQLClient.query("ROLLBACK");
     const response = await SQLClient.query(
       `select * from hazard_reports where id = '${reportId}';`
     );
