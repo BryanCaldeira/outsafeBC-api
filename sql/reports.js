@@ -279,23 +279,20 @@ async function flagReport(reportId, userId) {
 
   const isAlreadyFlagged = selectFlaggedReport.rowCount > 0;
 
-  await SQLClient.query(
-    `
-      ${
-        !!isAlreadyFlagged
-          ? `update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;`
-          : ""
-      }
-
-      insert into flagged_reports (user_id, hazard_report_id)
-       values (
-        '${userId}',
-        '${reportId}'
-       );
-    
-  
+  if (!isAlreadyFlagged) {
+    await SQLClient.query(
       `
-  );
+        insert into flagged_reports (user_id, hazard_report_id)
+         values (
+          '${userId}',
+          '${reportId}'
+         );
+      
+         update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;
+    
+        `
+    );
+  }
 
   const response = await SQLClient.query(
     ` select * from hazard_reports where id = '${reportId}'; `
