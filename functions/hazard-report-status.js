@@ -4,11 +4,12 @@ const { getCategoryOptionsById } = require("../sql/category-options");
 
 const update = async (event) => {
   try {
-    const { id, is_active = false } = event.queryStringParameters;
+    const { id, is_active } = event.queryStringParameters;
 
-    const queryResponse = is_active
-      ? await enableDeletedReport(id)
-      : await deleteReport(id);
+    const queryResponse =
+      is_active === "true"
+        ? await enableDeletedReport(id)
+        : await deleteReport(id);
 
     if (!queryResponse.rowCount) {
       return {
@@ -51,6 +52,7 @@ const update = async (event) => {
       };
     });
 
+    console.log({ result });
     const data = { ...result?.[0] };
 
     const hazardOptionQuery = await getCategoryOptionsById(data?.hazard?.id);
