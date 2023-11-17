@@ -82,8 +82,8 @@ async function getReports(data) {
     params.push(
       `${
         type === "past"
-          ? `r.created_at <= (CURRENT_DATE - INTERVAL '2 days')`
-          : `r.created_at > (CURRENT_DATE - INTERVAL '2 days')`
+          ? `r.created_at <= (CURRENT_DATE - INTERVAL '7 days')`
+          : `r.created_at > (CURRENT_DATE - INTERVAL '7 days')`
       }`
     );
   }
