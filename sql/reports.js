@@ -121,7 +121,7 @@ async function getReports(data) {
        join category_options co on co.id = r.category_option_id
        join categories c on c.id = co.category_id
        left join users u on u.id = r.user_id
-       ${where} ORDER BY r.index asc 
+       ${where} ORDER BY r.created_at desc 
    `;
     //   console.log(queryString);
     const response = await SQLClient.query(queryString);
