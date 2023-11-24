@@ -44,7 +44,7 @@ async function updateUser(id, name, photo) {
     { key: "name", value: name },
     { key: "photo", value: photo },
   ]
-    .filter(({ value }) => !!value)
+    // .filter(({ value }) => !!value)
     .map(({ value, key }) => `${key} = '${value}'`)
     .join(",");
 

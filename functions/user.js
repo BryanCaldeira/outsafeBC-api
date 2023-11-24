@@ -190,6 +190,22 @@ const update = async (event) => {
 
     const user = response?.rows?.[0];
 
+    if (!user) {
+      return {
+        ...headers,
+        statusCode: 404,
+        body: JSON.stringify({
+          error: "User not found",
+          data: {
+            id: user?.id,
+            createdAt: user?.created_at,
+            name: user?.name,
+            email: user?.email,
+            photo: user?.photo,
+          },
+        }),
+      };
+    }
     return {
       ...headers,
       statusCode: 200,
