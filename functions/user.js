@@ -186,7 +186,7 @@ const update = async (event) => {
       };
     }
 
-    const response = await updateUser(id, name ?? "", photo ?? "");
+    const response = await updateUser(id, name ?? "", photo ?? undefined);
 
     const user = response?.rows?.[0];
 
