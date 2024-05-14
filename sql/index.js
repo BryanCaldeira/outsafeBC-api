@@ -7,6 +7,7 @@ const sql = () => {
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+    ssl: true
   });
 
   client.connect(function (err) {
