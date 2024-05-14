@@ -2,7 +2,7 @@ const SQLClient = require("./index.js");
 
 async function getCategories() {
   const response = await SQLClient.query(
-    `select * from categories ORDER BY quick_filter_order asc`
+    `select * from categories`
   );
 
   return response;
