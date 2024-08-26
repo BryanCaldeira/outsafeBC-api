@@ -158,7 +158,7 @@ async function getReportsById(reportId) {
 
 async function getEndorsedReports(reportId, userId) {
   const response = await SQLClient.query(
-    `select * from endorsed_reports where id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1`
+    `select * from hazard_reports where id = '${reportId}' and user_id = '${userId}' limit 1`
   );
 
   return response;
