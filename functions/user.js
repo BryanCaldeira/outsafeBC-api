@@ -108,7 +108,6 @@ const get = async (event) => {
 const create = async (event) => {
   try {
     const auth = getAuth(app);
-
     const body = JSON.parse(event.body);
     const { email, password, name } = body;
 

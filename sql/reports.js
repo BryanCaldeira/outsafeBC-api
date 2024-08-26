@@ -102,7 +102,7 @@ async function getReports(data) {
   // console.log({ params, where });
 
   const countQuery = `
-  SELECT COUNT(*) 
+  SELECT COUNT(*)
   FROM hazard_reports hr  join category_options co on co.id = hr.category_option_id
   join categories c on c.id = co.category_id
   left join users u on u.id = hr.user_id ${where.replaceAll(" r.", " hr.")}
@@ -121,7 +121,7 @@ async function getReports(data) {
        join category_options co on co.id = r.category_option_id
        join categories c on c.id = co.category_id
        left join users u on u.id = r.user_id
-       ${where} ORDER BY r.created_at desc 
+       ${where} ORDER BY r.created_at desc
    `;
     //   console.log(queryString);
     const response = await SQLClient.query(queryString);
@@ -136,11 +136,11 @@ async function getReports(data) {
 
 async function getReportsById(reportId) {
   const response = await SQLClient.query(
-    `select r.*, co.name as hazard_option_name, c.id as category_id, c.name as category_name,c.ui_settings as category_settings, u.name as user_name, u.email as user_email, u.photo as user_photo from hazard_reports r 
+    `select r.*, co.name as hazard_option_name, c.id as category_id, c.name as category_name,c.ui_settings as category_settings, u.name as user_name, u.email as user_email, u.photo as user_photo from hazard_reports r
     join category_options co on r.category_option_id = co.id
     join categories c on co.category_id = c.id
     left join users u on r.user_id = u.id
-    where 
+    where
     r.id = '${reportId}'
     `
   );
@@ -158,7 +158,7 @@ async function getReportsById(reportId) {
 
 async function getEndorsedReports(reportId, userId) {
   const response = await SQLClient.query(
-    `select * from endorsed_reports where hazard_report_id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1`
+    `select * from endorsed_reports where id = '${reportId}' and user_id = '${userId}' and is_active = true limit 1`
   );
 
   return response;
@@ -287,9 +287,9 @@ async function flagReport(reportId, userId) {
           '${userId}',
           '${reportId}'
          );
-      
+
          update hazard_reports set flagged_count = flagged_count + 1 where id = '${reportId}' ;
-    
+
         `
     );
   }
@@ -341,7 +341,7 @@ async function createReport(data) {
   )}', '${category_option_id}', '${
     comment ?? ""
   }', '${user_id}' , ${insertImages} )
- 
+
    returning *
  `;
 
@@ -367,11 +367,11 @@ async function updateReport(data) {
     ? ` , images = ARRAY [${images.map((image) => `'${image}'`).join(",")}]`
     : ",images =  '{}'::text[] ";
 
-  const query = `update hazard_reports set 
-  latitude = ${latitude}, 
-  longitude = ${longitude}, 
-  address = '${address}', 
-  category_option_id = '${category_option_id}', 
+  const query = `update hazard_reports set
+  latitude = ${latitude},
+  longitude = ${longitude},
+  address = '${address}',
+  category_option_id = '${category_option_id}',
   comments = '${comment ?? ""}'
   ${updateImages}
   where id = '${id}' and user_id = '${user_id}'
