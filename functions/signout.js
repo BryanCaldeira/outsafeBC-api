@@ -7,51 +7,51 @@ const firebaseConfig = require("../utils/firebaseConfig");
 const app = initializeApp(firebaseConfig.config);
 
 exports.handler = async (event) => {
-  const auth = JSON.parse(event.body);
+	const auth = JSON.parse(event.body);
 
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      ...headers,
-      statusCode: 200,
-      body: JSON.stringify({
-        data: null,
-      }),
-    };
-  }
+	if (event.httpMethod === "OPTIONS") {
+		return {
+			statusCode: 200,
+			headers,
+			body: JSON.stringify({
+				data: null,
+			}),
+		};
+	}
 
-  if (event.httpMethod === "POST" && !!auth?.currentUser) {
-    try {
-      const auth2 = getAuth(app);
+	if (event.httpMethod === "POST" && !!auth?.currentUser) {
+		try {
+			const auth2 = getAuth(app);
 
-      await signOut(auth);
-      return {
-        ...headers,
-        statusCode: 200,
-        body: JSON.stringify({
-          error: null,
-          data: null,
-          message: `${auth?.currentUser?.email} signed out`,
-        }),
-      };
-    } catch (error) {
-      // return {
-      //   ...headers,
-      //   statusCode: 200,
-      //   body: JSON.stringify({
-      //     error: error.message,
-      //     data: null,
-      //   }),
-      // };
-    }
-  }
+			await signOut(auth);
+			return {
+				statusCode: 200,
+				headers,
+				body: JSON.stringify({
+					error: null,
+					data: null,
+					message: `${auth?.currentUser?.email} signed out`,
+				}),
+			};
+		} catch (error) {
+			// return {
+			//   ...headers,
+			//   statusCode: 200,
+			//   body: JSON.stringify({
+			//     error: error.message,
+			//     data: null,
+			//   }),
+			// };
+		}
+	}
 
-  return {
-    ...headers,
-    statusCode: 200,
-    body: JSON.stringify({
-      error: `${event.httpMethod} is not configured yet`,
-      data: null,
-      message: null,
-    }),
-  };
+	return {
+		statusCode: 200,
+		headers,
+		body: JSON.stringify({
+			error: `${event.httpMethod} is not configured yet`,
+			data: null,
+			message: null,
+		}),
+	};
 };
